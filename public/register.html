@@ -595,22 +595,34 @@
                     const result = await res.json();
                     
                     if (res.ok && result.success) {
+                        /* Also save to local merchants array so login can authenticate */
                         if (typeof KalpaAuth !== 'undefined') {
-                            KalpaAuth._set('session', {
-                                merchantId: result.merchant.id,
-                                email: result.merchant.email,
-                                name: result.merchant.name,
-                                businessName: result.merchant.businessName,
-                                loginAt: new Date().toISOString(),
-                                rememberMe: false
-                            });
+                            const merchants = KalpaAuth._get('merchants') || [];
+                            if (!merchants.find(m => m.email === result.merchant.email)) {
+                                merchants.push({
+                                    id: result.merchant.id,
+                                    name: result.merchant.name,
+                                    businessName: result.merchant.businessName,
+                                    email: result.merchant.email,
+                                    phone: result.merchant.phone,
+                                    passwordHash: KalpaAuth._hashPassword(data.password),
+                                    businessCategory: data.businessCategory,
+                                    businessAddress: data.businessAddress,
+                                    createdAt: result.merchant.createdAt
+                                });
+                                KalpaAuth._set('merchants', merchants);
+                            }
                         }
-                        window.location.href = 'onboarding.html';
+                        window.location.href = 'login.html?registered=true';
                     } else {
                         throw new Error(result.error || 'Registration failed. Please try again.');
                     }
                 } catch (error) {
-                    globalError.textContent = error.message;
+                    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                        globalError.textContent = 'Network error. Please check your connection and try again.';
+                    } else {
+                        globalError.textContent = error.message;
+                    }
                     globalError.classList.add('visible');
                     
                     submitBtn.classList.remove('loading');

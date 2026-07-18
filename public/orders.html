@@ -112,9 +112,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Initialize layout
-            if (typeof KalpaLayout !== 'undefined') {
-                KalpaLayout.init();
-            }
+            KalpaLayout.init();
 
             // Page State
             let allOrders = [];
@@ -132,13 +130,15 @@
             const modalBody = document.getElementById('order-modal-body');
 
             // Load Data
-            async function loadData() {
+            function loadData() {
                 try {
-                    allOrders = await KalpaStore.getOrders();
+                    allOrders = KalpaStore.getOrders();
+                    allOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                     updateStats(allOrders);
                     filterOrders();
                 } catch (error) {
                     console.error('Error loading orders:', error);
+                    tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Error loading orders.</td></tr>';
                 }
             }
 
@@ -154,21 +154,14 @@
                     if (status === 'pending') pending++;
                     if (status === 'processing') processing++;
                     if (status === 'delivered') delivered++;
-                    if (status !== 'cancelled') revenue += (order.total || 0);
+                    if (status !== 'cancelled') revenue += (order.amount || 0);
                 });
 
-                if (typeof KalpaAnimations !== 'undefined') {
-                    KalpaAnimations.animateCounter(document.getElementById('stat-total-orders'), total);
-                    KalpaAnimations.animateCounter(document.getElementById('stat-pending'), pending);
-                    KalpaAnimations.animateCounter(document.getElementById('stat-processing'), processing);
-                    KalpaAnimations.animateCounter(document.getElementById('stat-delivered'), delivered);
-                }
-                
-                if (typeof KalpaLayout !== 'undefined') {
-                    document.getElementById('stat-total-revenue').textContent = KalpaLayout.formatCurrency(revenue);
-                } else {
-                    document.getElementById('stat-total-revenue').textContent = '₹' + revenue.toFixed(2);
-                }
+                document.getElementById('stat-total-orders').textContent = total;
+                document.getElementById('stat-pending').textContent = pending;
+                document.getElementById('stat-processing').textContent = processing;
+                document.getElementById('stat-delivered').textContent = delivered;
+                document.getElementById('stat-total-revenue').textContent = KalpaLayout.formatCurrency(revenue);
             }
 
             function filterOrders() {
@@ -177,8 +170,8 @@
 
                 filteredOrders = allOrders.filter(order => {
                     const matchesSearch = 
-                        (order.id && order.id.toLowerCase().includes(searchTerm)) || 
-                        (order.customer && order.customer.name && order.customer.name.toLowerCase().includes(searchTerm));
+                        (order.orderId && order.orderId.toLowerCase().includes(searchTerm)) || 
+                        (order.customerName && order.customerName.toLowerCase().includes(searchTerm));
                     const matchesStatus = !statusTerm || (order.status && order.status.toLowerCase() === statusTerm);
                     return matchesSearch && matchesStatus;
                 });
@@ -201,20 +194,27 @@
                         const tr = document.createElement('tr');
                         tr.style.cursor = 'pointer';
                         
-                        const itemsCount = order.items ? order.items.reduce((sum, item) => sum + (item.quantity || 1), 0) : 0;
+                        const itemsCount = order.items ? order.items.reduce((sum, item) => sum + (item.qty || 1), 0) : 0;
                         
                         tr.innerHTML = `
-                            <td><span class="order-id" style="font-family: monospace; color: var(--primary);">${order.id}</span></td>
-                            <td>${order.customer?.name || 'N/A'}</td>
+                            <td><span style="font-family: monospace; color: var(--primary, #2563EB);">${order.orderId || order.id}</span></td>
+                            <td>${order.customerName || 'N/A'}</td>
                             <td>${itemsCount}</td>
-                            <td>${typeof KalpaLayout !== 'undefined' ? KalpaLayout.formatCurrency(order.total) : '₹' + order.total}</td>
-                            <td>${typeof KalpaLayout !== 'undefined' ? KalpaLayout.statusBadge(order.status) : order.status}</td>
+                            <td>${KalpaLayout.formatCurrency(order.amount || 0)}</td>
+                            <td>${KalpaLayout.statusBadge(order.status)}</td>
                             <td>${order.paymentMethod || 'N/A'}</td>
-                            <td>${typeof KalpaLayout !== 'undefined' ? KalpaLayout.formatDate(order.date) : order.date}</td>
+                            <td>${KalpaLayout.formatDate(order.createdAt)}</td>
                             <td onclick="event.stopPropagation()">
-                                <button class="btn btn-icon view-btn" title="View Order">
-                                    ${typeof KalpaLayout !== 'undefined' && KalpaLayout.icons ? KalpaLayout.icons.eye : '👁️'}
+                                <button class="btn btn-icon view-btn" title="View Order" style="background:none;border:none;cursor:pointer;padding:4px;">
+                                    ${KalpaLayout.icons.eye || '👁️'}
                                 </button>
+                                <select class="form-input" style="max-width:120px;padding:4px 6px;font-size:12px;" onchange="updateOrderStatus('${order.id}', this.value)" onclick="event.stopPropagation()">
+                                    <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Packed</option>
+                                    <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Shipped</option>
+                                    <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                                    <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                                </select>
                             </td>
                         `;
 
@@ -237,25 +237,10 @@
 
             function renderPagination() {
                 const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
-                if (typeof KalpaLayout !== 'undefined' && KalpaLayout.renderPagination) {
-                    paginationContainer.innerHTML = KalpaLayout.renderPagination(currentPage, totalPages);
-                    
-                    const pageButtons = paginationContainer.querySelectorAll('.page-btn');
-                    pageButtons.forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            if (btn.disabled || btn.classList.contains('active')) return;
-                            const text = btn.textContent;
-                            if (text === 'Previous') {
-                                currentPage = Math.max(1, currentPage - 1);
-                            } else if (text === 'Next') {
-                                currentPage = Math.min(totalPages, currentPage + 1);
-                            } else {
-                                currentPage = parseInt(text);
-                            }
-                            renderTable();
-                        });
-                    });
-                }
+                KalpaLayout.renderPagination(paginationContainer, currentPage, totalPages, (newPage) => {
+                    currentPage = newPage;
+                    renderTable();
+                });
             }
 
             function openModal(order) {
@@ -263,11 +248,11 @@
                 if (order.items && order.items.length > 0) {
                     itemsHtml += '<table class="data-table" style="width: 100%;"><thead><tr><th>Product</th><th>Qty</th><th>Price</th></tr></thead><tbody>';
                     order.items.forEach(item => {
-                        const price = typeof KalpaLayout !== 'undefined' ? KalpaLayout.formatCurrency(item.price || 0) : '₹' + (item.price || 0);
+                        const price = KalpaLayout.formatCurrency((item.price || 0) * (item.qty || 1));
                         itemsHtml += `
                             <tr>
-                                <td>${item.name || item.productName || 'Unknown Product'}</td>
-                                <td>${item.quantity || 1}</td>
+                                <td>${item.name || 'Unknown Product'}</td>
+                                <td>${item.qty || 1}</td>
                                 <td>${price}</td>
                             </tr>
                         `;
@@ -277,41 +262,41 @@
                     itemsHtml += '<p>No items found.</p></div>';
                 }
 
-                const totalFormatted = typeof KalpaLayout !== 'undefined' ? KalpaLayout.formatCurrency(order.total) : '₹' + order.total;
-                const dateFormatted = typeof KalpaLayout !== 'undefined' ? KalpaLayout.formatDate(order.date) : order.date;
-                const statusBadge = typeof KalpaLayout !== 'undefined' ? KalpaLayout.statusBadge(order.status) : order.status;
-                const deliveryDateFormatted = order.deliveryDate ? (typeof KalpaLayout !== 'undefined' ? KalpaLayout.formatDate(order.deliveryDate) : order.deliveryDate) : 'N/A';
+                const totalFormatted = KalpaLayout.formatCurrency(order.amount || 0);
+                const dateFormatted = KalpaLayout.formatDate(order.createdAt);
+                const statusBadge = KalpaLayout.statusBadge(order.status);
+                const deliveryDateFormatted = order.deliveryDate ? KalpaLayout.formatDate(order.deliveryDate) : 'N/A';
 
                 modalBody.innerHTML = `
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
                         <div>
-                            <p style="color: var(--gray-500); font-size: 0.875rem; margin-bottom: 0.25rem;">Order ID</p>
-                            <p style="font-family: monospace; font-weight: 600; color: var(--primary);">${order.id}</p>
+                            <p style="color: #9CA3AF; font-size: 0.875rem; margin-bottom: 0.25rem;">Order ID</p>
+                            <p style="font-family: monospace; font-weight: 600; color: var(--primary, #2563EB);">${order.orderId || order.id}</p>
                         </div>
                         <div>
-                            <p style="color: var(--gray-500); font-size: 0.875rem; margin-bottom: 0.25rem;">Status</p>
+                            <p style="color: #9CA3AF; font-size: 0.875rem; margin-bottom: 0.25rem;">Status</p>
                             <p>${statusBadge}</p>
                         </div>
                         <div>
-                            <p style="color: var(--gray-500); font-size: 0.875rem; margin-bottom: 0.25rem;">Customer</p>
-                            <p style="font-weight: 500;">${order.customer?.name || 'N/A'}</p>
-                            <p style="font-size: 0.875rem; color: var(--gray-500);">${order.customer?.email || ''}</p>
-                            <p style="font-size: 0.875rem; color: var(--gray-500);">${order.customer?.city || ''}</p>
+                            <p style="color: #9CA3AF; font-size: 0.875rem; margin-bottom: 0.25rem;">Customer</p>
+                            <p style="font-weight: 500;">${order.customerName || 'N/A'}</p>
+                            <p style="font-size: 0.875rem; color: #9CA3AF;">${order.customerEmail || ''}</p>
+                            <p style="font-size: 0.875rem; color: #9CA3AF;">${order.customerCity || ''}</p>
                         </div>
                         <div>
-                            <p style="color: var(--gray-500); font-size: 0.875rem; margin-bottom: 0.25rem;">Payment Method</p>
+                            <p style="color: #9CA3AF; font-size: 0.875rem; margin-bottom: 0.25rem;">Payment Method</p>
                             <p>${order.paymentMethod || 'N/A'}</p>
                         </div>
                         <div>
-                            <p style="color: var(--gray-500); font-size: 0.875rem; margin-bottom: 0.25rem;">Order Date</p>
+                            <p style="color: #9CA3AF; font-size: 0.875rem; margin-bottom: 0.25rem;">Order Date</p>
                             <p>${dateFormatted}</p>
                         </div>
                         <div>
-                            <p style="color: var(--gray-500); font-size: 0.875rem; margin-bottom: 0.25rem;">Expected Delivery</p>
+                            <p style="color: #9CA3AF; font-size: 0.875rem; margin-bottom: 0.25rem;">Expected Delivery</p>
                             <p>${deliveryDateFormatted}</p>
                         </div>
                         <div style="grid-column: span 2;">
-                            <p style="color: var(--gray-500); font-size: 0.875rem; margin-bottom: 0.25rem;">Total Amount</p>
+                            <p style="color: #9CA3AF; font-size: 0.875rem; margin-bottom: 0.25rem;">Total Amount</p>
                             <p style="font-weight: 600; font-size: 1.125rem;">${totalFormatted}</p>
                         </div>
                     </div>
@@ -339,6 +324,12 @@
             // Initialize
             loadData();
         });
+
+        function updateOrderStatus(orderId, newStatus) {
+            KalpaStore.updateOrderStatus(orderId, newStatus);
+            KalpaAnimations.showToast('Status Updated', `Order status changed to ${newStatus}`, 'success');
+            setTimeout(() => location.reload(), 800);
+        }
     </script>
 </body>
 </html>

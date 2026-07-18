@@ -450,12 +450,34 @@
                     const res = await fetch('/api/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, password, rememberMe })
+                        body: JSON.stringify({ email, password })
                     });
                     const result = await res.json();
                     
                     if (res.ok && result.success) {
                         if (typeof KalpaAuth !== 'undefined') {
+                            /* Save merchant to local merchants array */
+                            const merchants = KalpaAuth._get('merchants') || [];
+                            let existingIdx = merchants.findIndex(m => m.email === result.merchant.email);
+                            const merchantRecord = {
+                                id: result.merchant.id,
+                                name: result.merchant.name,
+                                businessName: result.merchant.businessName,
+                                email: result.merchant.email,
+                                phone: result.merchant.phone,
+                                passwordHash: KalpaAuth._hashPassword(password),
+                                businessCategory: result.merchant.businessCategory || '',
+                                businessAddress: result.merchant.businessAddress || '',
+                                createdAt: result.merchant.createdAt
+                            };
+                            if (existingIdx >= 0) {
+                                merchants[existingIdx] = { ...merchants[existingIdx], ...merchantRecord };
+                            } else {
+                                merchants.push(merchantRecord);
+                            }
+                            KalpaAuth._set('merchants', merchants);
+
+                            /* Create session */
                             KalpaAuth._set('session', {
                                 merchantId: result.merchant.id,
                                 email: result.merchant.email,
@@ -465,6 +487,12 @@
                                 rememberMe: rememberMe
                             });
                         }
+
+                        /* Generate mock data if first time */
+                        if (typeof KalpaStore !== 'undefined' && !KalpaStore.isMockDataGenerated()) {
+                            KalpaStore.generateMockData();
+                        }
+
                         window.location.href = 'dashboard.html';
                     } else {
                         loginError.style.display = 'block';
@@ -475,7 +503,11 @@
                 } catch (error) {
                     console.error('Login error:', error);
                     loginError.style.display = 'block';
-                    loginError.textContent = 'An error occurred during login. Please try again.';
+                    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                        loginError.textContent = 'Network error. Please check your connection.';
+                    } else {
+                        loginError.textContent = 'An error occurred during login. Please try again.';
+                    }
                     submitBtn.classList.remove('loading');
                     submitBtn.disabled = false;
                 }

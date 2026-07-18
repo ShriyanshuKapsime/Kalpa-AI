@@ -139,11 +139,8 @@
             
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
-                    // Reset all
                     tabs.forEach(t => t.classList.remove('active'));
                     contents.forEach(c => c.style.display = 'none');
-                    
-                    // Activate clicked
                     tab.classList.add('active');
                     const targetId = tab.getAttribute('data-target');
                     document.getElementById(targetId).style.display = 'block';
@@ -151,47 +148,90 @@
             });
 
             // Populate Profile Data
-            const merchant = KalpaAuth.getCurrentMerchant ? KalpaAuth.getCurrentMerchant() : null;
+            const merchant = KalpaAuth.getCurrentMerchant();
             if (merchant) {
                 document.getElementById('merchant-name').value = merchant.name || '';
                 document.getElementById('merchant-email').value = merchant.email || '';
                 document.getElementById('merchant-phone').value = merchant.phone || '';
-                
-                if (merchant.name) {
-                    document.getElementById('avatar-initial').textContent = merchant.name.charAt(0).toUpperCase();
-                }
+                document.getElementById('avatar-initial').textContent = (merchant.name || 'U').charAt(0).toUpperCase();
+
+                // Populate Business Data from merchant
+                document.getElementById('business-name').value = merchant.businessName || '';
+                document.getElementById('business-category').value = merchant.businessCategory || 'retail';
+                document.getElementById('business-address').value = merchant.businessAddress || '';
             }
 
             // Populate Store Data
-            const store = KalpaStore.getStoreProfile ? KalpaStore.getStoreProfile() : {};
-            document.getElementById('store-name').value = store.name || '';
+            const store = KalpaStore.getStoreProfile() || {};
+            document.getElementById('store-name').value = store.storeName || store.name || '';
             document.getElementById('store-desc').value = store.description || '';
-            document.getElementById('store-phone').value = store.phone || '';
+            document.getElementById('store-phone').value = store.phone || (merchant ? merchant.phone : '') || '';
 
             // Handle Profile Save
             document.getElementById('profile-form').addEventListener('submit', (e) => {
                 e.preventDefault();
-                const name = document.getElementById('merchant-name').value;
-                const phone = document.getElementById('merchant-phone').value;
-                if (KalpaAuth.updateMerchant) {
-                    KalpaAuth.updateMerchant({ name, phone });
+                const btn = e.target.querySelector('button[type="submit"]');
+                KalpaAnimations.setButtonLoading(btn, true);
+
+                const name = document.getElementById('merchant-name').value.trim();
+                const phone = document.getElementById('merchant-phone').value.trim();
+
+                if (!name || name.length < 2) {
+                    KalpaAnimations.showToast('Validation Error', 'Name must be at least 2 characters', 'warning');
+                    KalpaAnimations.setButtonLoading(btn, false, 'Save Profile');
+                    return;
                 }
-                KalpaAnimations.showToast('Profile updated successfully!', 'success');
-                if (name) {
-                    document.getElementById('avatar-initial').textContent = name.charAt(0).toUpperCase();
-                }
+
+                KalpaAuth.updateMerchant({ name, phone });
+                document.getElementById('avatar-initial').textContent = name.charAt(0).toUpperCase();
+
+                setTimeout(() => {
+                    KalpaAnimations.setButtonLoading(btn, false, 'Save Profile');
+                    KalpaAnimations.showToast('Profile Updated', 'Your profile has been saved successfully', 'success');
+                }, 400);
             });
 
             // Handle Business Save
             document.getElementById('business-form').addEventListener('submit', (e) => {
                 e.preventDefault();
-                KalpaAnimations.showToast('Business details updated successfully!', 'success');
+                const btn = e.target.querySelector('button[type="submit"]');
+                KalpaAnimations.setButtonLoading(btn, true);
+
+                const businessName = document.getElementById('business-name').value.trim();
+                const businessCategory = document.getElementById('business-category').value;
+                const businessAddress = document.getElementById('business-address').value.trim();
+
+                KalpaAuth.updateMerchant({ businessName, businessCategory, businessAddress });
+
+                setTimeout(() => {
+                    KalpaAnimations.setButtonLoading(btn, false, 'Save Business Details');
+                    KalpaAnimations.showToast('Business Updated', 'Business details have been saved successfully', 'success');
+                }, 400);
             });
 
             // Handle Store Save
             document.getElementById('store-form').addEventListener('submit', (e) => {
                 e.preventDefault();
-                KalpaAnimations.showToast('Store settings updated successfully!', 'success');
+                const btn = e.target.querySelector('button[type="submit"]');
+                KalpaAnimations.setButtonLoading(btn, true);
+
+                const storeName = document.getElementById('store-name').value.trim();
+                const description = document.getElementById('store-desc').value.trim();
+                const phone = document.getElementById('store-phone').value.trim();
+
+                const existingProfile = KalpaStore.getStoreProfile() || {};
+                KalpaStore.setStoreProfile({
+                    ...existingProfile,
+                    storeName,
+                    name: storeName,
+                    description,
+                    phone,
+                });
+
+                setTimeout(() => {
+                    KalpaAnimations.setButtonLoading(btn, false, 'Save Store Settings');
+                    KalpaAnimations.showToast('Store Settings Updated', 'Store settings have been saved successfully', 'success');
+                }, 400);
             });
         });
     </script>

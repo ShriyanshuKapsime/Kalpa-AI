@@ -97,47 +97,34 @@
                 <div class="stat-card">
                     <div class="stat-header">
                         <span class="stat-title">Total Products</span>
-                        <div class="stat-icon" style="background: var(--bg-blue); color: var(--primary);">${KalpaLayout.icons.box || '<svg></svg>'}</div>
                     </div>
-                    <div class="stat-value" data-count="${totalProducts}">0</div>
+                    <div class="stat-value">${totalProducts}</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-header">
                         <span class="stat-title">Low Stock</span>
-                        <div class="stat-icon" style="background: var(--bg-warning); color: var(--warning);">${KalpaLayout.icons.alertTriangle || '<svg></svg>'}</div>
                     </div>
-                    <div class="stat-value" data-count="${lowStock}">0</div>
+                    <div class="stat-value" style="color: var(--warning, #F59E0B);">${lowStock}</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-header">
                         <span class="stat-title">Out of Stock</span>
-                        <div class="stat-icon" style="background: var(--bg-danger); color: var(--danger);">${KalpaLayout.icons.alertCircle || '<svg></svg>'}</div>
                     </div>
-                    <div class="stat-value" data-count="${outOfStock}">0</div>
+                    <div class="stat-value" style="color: var(--danger, #EF4444);">${outOfStock}</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-header">
                         <span class="stat-title">Categories</span>
-                        <div class="stat-icon" style="background: var(--bg-gray); color: var(--text-secondary);">${KalpaLayout.icons.grid || '<svg></svg>'}</div>
                     </div>
-                    <div class="stat-value" data-count="${categories}">0</div>
+                    <div class="stat-value">${categories}</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-header">
                         <span class="stat-title">Inventory Value</span>
-                        <div class="stat-icon" style="background: var(--bg-success); color: var(--success);">${KalpaLayout.icons.dollarSign || '<svg></svg>'}</div>
                     </div>
-                    <div class="stat-value" data-count="${inventoryValue}">0</div>
+                    <div class="stat-value">${KalpaLayout.formatCurrency(inventoryValue)}</div>
                 </div>
             `;
-
-            // Run animations
-            document.querySelectorAll('.stat-value[data-count]').forEach(el => {
-                KalpaAnimations.animateCounter(el, parseInt(el.getAttribute('data-count'), 10), el.getAttribute('data-count').includes('.') || el.getAttribute('data-count') > 1000 ? { prefix: inventoryValue === parseFloat(el.getAttribute('data-count')) ? '$' : '' } : {});
-                if(parseFloat(el.getAttribute('data-count')) === inventoryValue) {
-                   el.innerHTML = KalpaLayout.formatCurrency(inventoryValue); 
-                }
-            });
 
             // AI Alerts
             const alertsContainer = document.getElementById('ai-alerts-container');
@@ -145,31 +132,25 @@
             
             if (alertProducts.length === 0) {
                 alertsContainer.innerHTML = `
-                    <div class="empty-state" style="padding: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm); color: var(--success);">
-                        ${KalpaLayout.icons.checkCircle || ''}
+                    <div style="padding: 16px; display: flex; align-items: center; gap: 8px; color: var(--success, #10B981);">
+                        <span>✅</span>
                         <span>All stock levels healthy</span>
                     </div>
                 `;
             } else {
-                let alertsHtml = '<div class="alerts-list" style="display: flex; flex-direction: column; gap: var(--spacing-sm);">';
-                alertProducts.forEach(p => {
+                let alertsHtml = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+                alertProducts.slice(0, 5).forEach(p => {
                     const isOut = p.stock === 0;
-                    const iconColor = isOut ? 'var(--danger)' : 'var(--warning)';
-                    const iconBg = isOut ? 'var(--bg-danger)' : 'var(--bg-warning)';
-                    const icon = isOut ? KalpaLayout.icons.alertCircle : KalpaLayout.icons.alertTriangle;
-                    
                     alertsHtml += `
-                        <div class="alert-item" style="display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
-                            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-                                <div class="alert-icon" style="background: ${iconBg}; color: ${iconColor}; padding: var(--spacing-sm); border-radius: var(--radius-full);">
-                                    ${icon || ''}
-                                </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border-color, #E5E7EB); border-radius: 8px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 18px;">${isOut ? '🚨' : '⚠️'}</span>
                                 <div>
-                                    <div style="font-weight: 500; color: var(--text-primary);">${p.title}</div>
-                                    <div style="font-size: var(--text-sm); color: var(--text-secondary);">Current Stock: ${p.stock}</div>
+                                    <div style="font-weight: 500;">${p.name}</div>
+                                    <div style="font-size: 12px; color: var(--text-secondary, #6B7280);">Current Stock: ${p.stock} units</div>
                                 </div>
                             </div>
-                            <button class="btn btn-secondary btn-sm">Restock</button>
+                            <button class="btn btn-secondary btn-sm" onclick="restockProduct('${p.id}')">Restock</button>
                         </div>
                     `;
                 });
@@ -196,7 +177,7 @@
                 if (paginatedProducts.length === 0) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="7" style="text-align: center; padding: var(--spacing-xl); color: var(--text-secondary);">
+                            <td colspan="7" style="text-align: center; padding: 48px; color: var(--text-secondary, #6B7280);">
                                 No products found matching your filters.
                             </td>
                         </tr>
@@ -207,45 +188,32 @@
 
                 paginatedProducts.forEach(p => {
                     const status = KalpaLayout.stockStatus(p.stock);
-                    const initial = p.title.charAt(0).toUpperCase();
+                    const initial = p.name.charAt(0).toUpperCase();
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>
-                            <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
-                                <div class="avatar" style="width: 32px; height: 32px; border-radius: var(--radius-full); background: var(--bg-blue); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 600;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background: #EFF6FF; color: #2563EB; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px;">
                                     ${initial}
                                 </div>
-                                <span style="font-weight: 500;">${p.title}</span>
+                                <span style="font-weight: 500;">${p.name}</span>
                             </div>
                         </td>
-                        <td style="font-family: monospace; color: var(--text-secondary);">${p.sku || p.id}</td>
+                        <td style="font-family: monospace; color: var(--text-secondary, #6B7280);">${p.sku || p.id}</td>
                         <td>${p.category}</td>
                         <td style="font-weight: 500;">${p.stock}</td>
                         <td>${KalpaLayout.statusBadge(status)}</td>
                         <td>${KalpaLayout.formatCurrency(p.sellingPrice)}</td>
-                        <td style="color: var(--text-secondary);">${KalpaLayout.formatDate(p.createdAt || new Date().toISOString())}</td>
+                        <td style="color: var(--text-secondary, #6B7280);">${KalpaLayout.formatDate(p.updatedAt || p.createdAt || new Date().toISOString())}</td>
                     `;
                     tbody.appendChild(tr);
                 });
 
                 const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-                if (totalPages > 1) {
-                    paginationContainer.innerHTML = KalpaLayout.renderPagination(currentPage, totalPages);
-                    
-                    // Add pagination event listeners
-                    paginationContainer.querySelectorAll('.pagination-btn').forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            if (btn.disabled || btn.classList.contains('active')) return;
-                            const page = btn.getAttribute('data-page');
-                            if (page === 'prev') currentPage--;
-                            else if (page === 'next') currentPage++;
-                            else currentPage = parseInt(page, 10);
-                            renderTable();
-                        });
-                    });
-                } else {
-                    paginationContainer.innerHTML = '';
-                }
+                KalpaLayout.renderPagination(paginationContainer, currentPage, totalPages, (newPage) => {
+                    currentPage = newPage;
+                    renderTable();
+                });
             }
 
             function applyFilters() {
@@ -253,13 +221,13 @@
                 const statusValue = statusFilter.value;
 
                 filteredProducts = products.filter(p => {
-                    const matchesSearch = p.title.toLowerCase().includes(searchTerm) || (p.sku || p.id).toLowerCase().includes(searchTerm);
+                    const matchesSearch = p.name.toLowerCase().includes(searchTerm) || (p.sku || p.id).toLowerCase().includes(searchTerm);
                     let matchesStatus = true;
                     
                     const status = KalpaLayout.stockStatus(p.stock);
-                    if (statusValue === 'in_stock') matchesStatus = status === 'in_stock';
-                    else if (statusValue === 'low_stock') matchesStatus = status === 'low_stock';
-                    else if (statusValue === 'out_of_stock') matchesStatus = status === 'out_of_stock';
+                    if (statusValue === 'in_stock') matchesStatus = status === 'in-stock';
+                    else if (statusValue === 'low_stock') matchesStatus = status === 'low-stock';
+                    else if (statusValue === 'out_of_stock') matchesStatus = status === 'out-of-stock';
 
                     return matchesSearch && matchesStatus;
                 });
@@ -273,6 +241,15 @@
 
             renderTable();
         });
+
+        function restockProduct(productId) {
+            const product = KalpaStore.getProduct(productId);
+            if (product) {
+                KalpaStore.updateProduct(productId, { stock: product.stock + 25 });
+                KalpaAnimations.showToast('Restocked', `${product.name} restocked with 25 units`, 'success');
+                setTimeout(() => location.reload(), 1000);
+            }
+        }
     </script>
 </body>
 </html>

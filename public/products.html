@@ -171,27 +171,15 @@
         });
 
         function initFilters() {
-            const stats = KalpaStore.getStats();
             const categorySelect = document.getElementById('categoryFilter');
-            
-            if (stats && stats.categories) {
-                stats.categories.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat.name;
-                    option.textContent = cat.name;
-                    categorySelect.appendChild(option);
-                });
-            } else {
-                // Fallback categories if getStats doesn't provide them
-                const categories = [...new Set(KalpaStore.getProducts().map(p => p.category))];
-                categories.forEach(cat => {
-                    if(!cat) return;
-                    const option = document.createElement('option');
-                    option.value = cat;
-                    option.textContent = cat;
-                    categorySelect.appendChild(option);
-                });
-            }
+            const categories = [...new Set(KalpaStore.getProducts().map(p => p.category))];
+            categories.forEach(cat => {
+                if(!cat) return;
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                categorySelect.appendChild(option);
+            });
         }
 
         function loadProducts() {
@@ -204,7 +192,10 @@
             filteredProducts = products.filter(p => {
                 const matchesSearch = p.name.toLowerCase().includes(searchTerm);
                 const matchesCategory = !categoryFilter || p.category === categoryFilter;
-                const matchesStatus = !statusFilter || p.status === statusFilter;
+                let matchesStatus = true;
+                if (statusFilter === 'active') matchesStatus = p.status === 'active';
+                else if (statusFilter === 'draft') matchesStatus = p.status === 'draft';
+                else if (statusFilter === 'out_of_stock') matchesStatus = p.stock === 0;
                 return matchesSearch && matchesCategory && matchesStatus;
             });
 
@@ -255,7 +246,7 @@
                         </div>
                     </td>
                     <td>${KalpaLayout.statusBadge(product.status)}</td>
-                    <td>${KalpaLayout.confidenceBadge(product.confidenceScore || 0)}</td>
+                    <td>${KalpaLayout.confidenceBadge(product.confidence || 0)}</td>
                     <td>
                         <button class="table-action-btn" onclick="editProduct('${product.id}')" title="Edit">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
@@ -268,20 +259,16 @@
                 tbody.appendChild(tr);
             });
 
-            KalpaLayout.renderPagination(currentPage, totalPages, 'paginationContainer', (newPage) => {
+            KalpaLayout.renderPagination(paginationContainer, currentPage, totalPages, (newPage) => {
                 currentPage = newPage;
                 renderTable();
             });
-            
-            // Re-trigger stagger animation if applicable
-            if (window.KalpaAnimations && typeof window.KalpaAnimations.staggerChildren === 'function') {
-                window.KalpaAnimations.staggerChildren(tbody);
-            }
         }
 
         function deleteProduct(id) {
             if (confirm('Are you sure you want to delete this product?')) {
                 KalpaStore.deleteProduct(id);
+                KalpaAnimations.showToast('Deleted', 'Product has been removed', 'success');
                 loadProducts();
             }
         }

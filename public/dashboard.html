@@ -154,23 +154,24 @@
             }
 
             // 2. Auth & Welcome
-            const currentUser = window.KalpaStore ? KalpaStore.getCurrentUser() : { name: 'Merchant' };
-            if (currentUser) {
-                document.getElementById('merchant-welcome').textContent = `Welcome back, ${currentUser.name}`;
+            const merchant = KalpaAuth.getCurrentMerchant();
+            if (merchant) {
+                document.getElementById('merchant-welcome').textContent = `Welcome back, ${merchant.name}`;
             }
 
             // 3. Stats Grid population
-            const stats = window.KalpaStore ? KalpaStore.getStats() : {
-                revenue: 0, orders: 0, products: 0, lowStock: 0, storeHealth: 0, avgConfidence: 0
-            };
+            const stats = KalpaStore.getStats();
             
+            const storeHealth = stats.totalProducts > 0 ? Math.round(((stats.totalProducts - stats.outOfStock) / stats.totalProducts) * 100) : 0;
+            const aiConf = Math.round((stats.avgConfidence || 0) * 100);
+
             const statsData = [
-                { label: 'Revenue', value: stats.revenue, prefix: '₹', suffix: '', icon: (window.KalpaLayout && KalpaLayout.icons) ? KalpaLayout.icons.revenue : '💰', color: '#2563EB', trend: '+12.5%' },
-                { label: 'Orders', value: stats.orders, prefix: '', suffix: '', icon: (window.KalpaLayout && KalpaLayout.icons) ? KalpaLayout.icons.orders : '🛒', color: '#10B981', trend: '+8.2%' },
-                { label: 'Products', value: stats.products, prefix: '', suffix: '', icon: (window.KalpaLayout && KalpaLayout.icons) ? KalpaLayout.icons.products : '📦', color: '#8B5CF6', trend: null },
-                { label: 'Low Stock', value: stats.lowStock, prefix: '', suffix: '', icon: (window.KalpaLayout && KalpaLayout.icons) ? KalpaLayout.icons.warning : '⚠️', color: '#F59E0B', trend: null },
-                { label: 'Store Health', value: stats.storeHealth, prefix: '', suffix: '%', icon: (window.KalpaLayout && KalpaLayout.icons) ? KalpaLayout.icons.health : '❤️', color: '#06B6D4', trend: null },
-                { label: 'AI Confidence', value: stats.avgConfidence, prefix: '', suffix: '%', icon: (window.KalpaLayout && KalpaLayout.icons) ? KalpaLayout.icons.ai : '✨', color: '#3B82F6', trend: null }
+                { label: 'Revenue', value: stats.totalRevenue, prefix: '₹', suffix: '', icon: '💰', color: '#2563EB', trend: '+12.5%' },
+                { label: 'Orders', value: stats.totalOrders, prefix: '', suffix: '', icon: '🛒', color: '#10B981', trend: '+8.2%' },
+                { label: 'Products', value: stats.totalProducts, prefix: '', suffix: '', icon: '📦', color: '#8B5CF6', trend: null },
+                { label: 'Low Stock', value: stats.lowStock, prefix: '', suffix: '', icon: '⚠️', color: '#F59E0B', trend: null },
+                { label: 'Store Health', value: storeHealth, prefix: '', suffix: '%', icon: '❤️', color: '#06B6D4', trend: null },
+                { label: 'AI Confidence', value: aiConf, prefix: '', suffix: '%', icon: '✨', color: '#3B82F6', trend: null }
             ];
 
             const statsContainer = document.getElementById('stats-container');
@@ -204,7 +205,7 @@
                     const target = parseFloat(el.getAttribute('data-value')) || 0;
                     const prefix = el.getAttribute('data-prefix');
                     const suffix = el.getAttribute('data-suffix');
-                    KalpaAnimations.animateCounter(el, target, { prefix, suffix, duration: 1500 });
+                    KalpaAnimations.animateCounter(el, target, 1500, prefix, suffix);
                 });
             }
 
@@ -224,22 +225,18 @@
 
             // 5. Recent Orders
             const recentOrdersTable = document.getElementById('recent-orders-table');
-            const orders = window.KalpaStore && KalpaStore.getOrders ? KalpaStore.getOrders() : [];
-            const recentOrders = orders.slice(0, 5);
+            const orders = KalpaStore.getOrders();
+            const recentOrders = orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
             
             if (recentOrders.length > 0) {
                 recentOrders.forEach(order => {
                     const tr = document.createElement('tr');
-                    
-                    const amount = window.KalpaLayout && KalpaLayout.formatCurrency ? 
-                        KalpaLayout.formatCurrency(order.total) : `₹${order.total}`;
-                        
-                    const statusBadge = window.KalpaLayout && KalpaLayout.statusBadge ? 
-                        KalpaLayout.statusBadge(order.status) : `<span class="badge">${order.status}</span>`;
+                    const amount = KalpaLayout.formatCurrency(order.amount || 0);
+                    const statusBadge = KalpaLayout.statusBadge(order.status);
                         
                     tr.innerHTML = `
-                        <td style="font-weight: 500; color: var(--text-primary);">${order.id}</td>
-                        <td style="color: var(--text-secondary);">${order.customer}</td>
+                        <td style="font-weight: 500; color: var(--text-primary);">${order.orderId || order.id}</td>
+                        <td style="color: var(--text-secondary);">${order.customerName || 'N/A'}</td>
                         <td style="font-weight: 500;">${amount}</td>
                         <td>${statusBadge}</td>
                     `;
@@ -251,20 +248,18 @@
 
             // 6. Top Products
             const topProductsList = document.getElementById('top-products-list');
-            const topProducts = window.KalpaStore && KalpaStore.getTopProducts ? KalpaStore.getTopProducts() : [];
+            const topProducts = KalpaStore.getTopProducts(5);
             
             if (topProducts.length > 0) {
-                topProducts.slice(0, 5).forEach(product => {
+                topProducts.forEach(product => {
                     const item = document.createElement('div');
                     item.className = 'top-product-item';
-                    
-                    const revenue = window.KalpaLayout && KalpaLayout.formatCurrency ? 
-                        KalpaLayout.formatCurrency(product.revenue) : `₹${product.revenue}`;
+                    const revenue = KalpaLayout.formatCurrency(product.revenue || 0);
                         
                     item.innerHTML = `
                         <div class="top-product-info">
                             <span class="top-product-name">${product.name}</span>
-                            <span class="top-product-sales">${product.soldCount} units sold</span>
+                            <span class="top-product-sales">${product.sold || 0} units sold</span>
                         </div>
                         <div class="top-product-revenue">${revenue}</div>
                     `;
