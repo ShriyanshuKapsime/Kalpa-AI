@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - Kalpa AI</title>
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <div class="app-layout">
+        <div class="app-main">
+            <div class="page-content">
+                <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px;">
+                    <div>
+                        <h1 style="margin-bottom: 4px;">Analytics</h1>
+                        <p style="color: var(--color-text-light); margin: 0; font-size: 0.9rem;">Business intelligence and performance metrics</p>
+                    </div>
+                    <div class="btn-group" style="display: flex; gap: 8px;">
+                        <button class="btn btn-outline active">7 Days</button>
+                        <button class="btn btn-outline">30 Days</button>
+                        <button class="btn btn-outline">90 Days</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid-4 stagger-children">
+                    <div class="stat-card">
+                        <div class="stat-card-title">Revenue</div>
+                        <div class="stat-card-value" id="stat-revenue">₹0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title">Orders</div>
+                        <div class="stat-card-value" id="stat-orders">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title">Growth</div>
+                        <div class="stat-card-value" id="stat-growth" style="color: var(--color-success);">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title">Customers</div>
+                        <div class="stat-card-value" id="stat-customers">0</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px;">
+                    <div class="card chart-card">
+                        <div class="chart-card-header" style="padding: 16px; border-bottom: 1px solid var(--color-border); font-weight: 600;">Monthly Revenue</div>
+                        <div class="chart-card-body" style="padding: 16px; height: 260px; position: relative;">
+                            <canvas id="monthly-revenue-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card chart-card">
+                        <div class="chart-card-header" style="padding: 16px; border-bottom: 1px solid var(--color-border); font-weight: 600;">Top Categories</div>
+                        <div class="chart-card-body" style="padding: 16px; height: 260px; position: relative;">
+                            <canvas id="top-categories-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card chart-card">
+                        <div class="chart-card-header" style="padding: 16px; border-bottom: 1px solid var(--color-border); font-weight: 600;">Top Products by Revenue</div>
+                        <div class="chart-card-body" style="padding: 16px; height: 260px; position: relative;">
+                            <canvas id="top-products-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card chart-card">
+                        <div class="chart-card-header" style="padding: 16px; border-bottom: 1px solid var(--color-border); font-weight: 600;">Inventory Distribution</div>
+                        <div class="chart-card-body" style="padding: 16px; height: 260px; position: relative; display: flex; justify-content: center;">
+                            <canvas id="inventory-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/layout.js"></script>
+    <script src="js/animations.js"></script>
+    <script src="js/charts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            KalpaLayout.init();
+
+            // Stats
+            const orders = KalpaStore.getOrders();
+            const customers = KalpaStore.getCustomers();
+            
+            const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
+            const totalOrders = orders.length;
+            const growth = Math.floor(Math.random() * (15 - 8 + 1) + 8);
+            const totalCustomers = customers.length;
+
+            KalpaAnimations.animateCounter(document.getElementById('stat-revenue'), totalRevenue, { prefix: '₹' });
+            KalpaAnimations.animateCounter(document.getElementById('stat-orders'), totalOrders, { prefix: '' });
+            KalpaAnimations.animateCounter(document.getElementById('stat-growth'), growth, { prefix: '+', suffix: '%' });
+            KalpaAnimations.animateCounter(document.getElementById('stat-customers'), totalCustomers, { prefix: '' });
+
+            // Charts
+            const formatRs = (val) => '₹' + val.toLocaleString();
+
+            // 1. Monthly Revenue
+            const revenueData = KalpaStore.getRevenueByMonth(6);
+            if (typeof KalpaCharts !== 'undefined' && KalpaCharts.createAreaChart) {
+                KalpaCharts.createAreaChart('monthly-revenue-chart', revenueData, {
+                    yFormatter: formatRs
+                });
+            } else {
+                new Chart(document.getElementById('monthly-revenue-chart'), {
+                    type: 'line',
+                    data: {
+                        labels: revenueData.labels,
+                        datasets: [{
+                            label: 'Revenue',
+                            data: revenueData.values,
+                            fill: true,
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderColor: '#2563EB',
+                            tension: 0.4
+                        }]
+                    },
+                    options: { maintainAspectRatio: false }
+                });
+            }
+
+            // 2. Top Categories
+            const categoriesData = KalpaStore.getSalesByCategory();
+            if (typeof KalpaCharts !== 'undefined' && KalpaCharts.createBarChart) {
+                KalpaCharts.createBarChart('top-categories-chart', categoriesData, {
+                    horizontal: true,
+                    xFormatter: formatRs
+                });
+            } else {
+                new Chart(document.getElementById('top-categories-chart'), {
+                    type: 'bar',
+                    data: {
+                        labels: categoriesData.labels,
+                        datasets: [{
+                            label: 'Sales',
+                            data: categoriesData.values,
+                            backgroundColor: '#2563EB'
+                        }]
+                    },
+                    options: { indexAxis: 'y', maintainAspectRatio: false }
+                });
+            }
+
+            // 3. Top Products by Revenue
+            const topProducts = KalpaStore.getTopProducts(5);
+            const topProductsData = {
+                labels: topProducts.map(p => p.name),
+                values: topProducts.map(p => p.price * p.stock) // Pseudo revenue for demo
+            };
+            if (typeof KalpaCharts !== 'undefined' && KalpaCharts.createBarChart) {
+                KalpaCharts.createBarChart('top-products-chart', topProductsData, {
+                    horizontal: false,
+                    yFormatter: formatRs
+                });
+            } else {
+                new Chart(document.getElementById('top-products-chart'), {
+                    type: 'bar',
+                    data: {
+                        labels: topProductsData.labels,
+                        datasets: [{
+                            label: 'Revenue',
+                            data: topProductsData.values,
+                            backgroundColor: '#3B82F6'
+                        }]
+                    },
+                    options: { maintainAspectRatio: false }
+                });
+            }
+
+            // 4. Inventory Distribution
+            const products = KalpaStore.getProducts();
+            const categoryCounts = {};
+            products.forEach(p => {
+                categoryCounts[p.category] = (categoryCounts[p.category] || 0) + 1;
+            });
+            const invLabels = Object.keys(categoryCounts);
+            const invValues = Object.values(categoryCounts);
+
+            if (typeof KalpaCharts !== 'undefined' && KalpaCharts.createDoughnutChart) {
+                KalpaCharts.createDoughnutChart('inventory-chart', { labels: invLabels, values: invValues });
+            } else {
+                new Chart(document.getElementById('inventory-chart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: invLabels,
+                        datasets: [{
+                            data: invValues,
+                            backgroundColor: ['#2563EB', '#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE']
+                        }]
+                    },
+                    options: { maintainAspectRatio: false }
+                });
+            }
+            
+            // Buttons logic
+            document.querySelectorAll('.btn-group .btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

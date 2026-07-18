@@ -7,8 +7,55 @@ require('dotenv').config();
 
 const app = express();
 app.use(cors());
+app.use(express.json());
+app.use(express.static('public'));
 
 const upload = multer({ storage: multer.memoryStorage() });
+
+// In-memory user storage for hackathon
+const users = [];
+
+// ==========================================
+// AUTHENTICATION API
+// ==========================================
+app.post('/api/register', (req, res) => {
+    const { merchantName, businessName, email, phone, password, businessCategory, businessAddress } = req.body;
+    
+    if (!merchantName || !businessName || !email || !phone || !password) {
+        return res.status(400).json({ success: false, error: 'All required fields must be provided' });
+    }
+    
+    if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+        return res.status(400).json({ success: false, error: 'Email is already registered' });
+    }
+    
+    const merchant = {
+        id: 'merchant_' + Date.now().toString(36),
+        name: merchantName,
+        businessName,
+        email: email.toLowerCase(),
+        phone,
+        password,
+        businessCategory,
+        businessAddress,
+        createdAt: new Date().toISOString()
+    };
+    
+    users.push(merchant);
+    res.json({ success: true, merchant });
+});
+
+app.post('/api/login', (req, res) => {
+    const { email, password } = req.body;
+    
+    const merchant = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+    
+    if (!merchant) {
+        return res.status(401).json({ success: false, error: 'Invalid email or password' });
+    }
+    
+    res.json({ success: true, merchant });
+});
 
 // ==========================================
 // HYBRID API INITIALIZATION

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Kalpa AI</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <style>
+        /* Specific auth layout styles */
+        body, html {
+            height: 100%;
+            margin: 0;
+            background-color: var(--color-bg);
+        }
+        .auth-layout {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+        .auth-branding {
+            display: none;
+            flex: 1;
+            background-color: var(--color-primary);
+            color: white;
+            padding: var(--spacing-xl);
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        @media (min-width: 768px) {
+            .auth-branding {
+                display: flex;
+            }
+        }
+        .auth-branding::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0) 100%);
+            pointer-events: none;
+        }
+        .branding-content {
+            position: relative;
+            z-index: 1;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        .auth-branding h1 {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-md);
+            font-weight: 700;
+        }
+        .auth-branding p {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: var(--spacing-xl);
+        }
+        .auth-features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .auth-features li {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+            font-size: 1.1rem;
+        }
+        .auth-features svg {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+        .auth-form-side {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: var(--spacing-xl);
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .auth-form-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .auth-header {
+            margin-bottom: var(--spacing-xl);
+        }
+        .auth-header h2 {
+            font-size: 2rem;
+            margin-bottom: var(--spacing-xs);
+            color: var(--color-text);
+            font-weight: 600;
+        }
+        .auth-header p {
+            color: var(--color-text-light);
+            margin: 0;
+        }
+        .form-group {
+            margin-bottom: var(--spacing-md);
+            position: relative;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-weight: 500;
+            color: var(--color-text);
+        }
+        .input-icon-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-icon-wrapper > svg:first-child {
+            position: absolute;
+            left: 12px;
+            color: var(--color-text-light);
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+        }
+        .form-input {
+            width: 100%;
+            padding: 10px 12px 10px 40px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+            background-color: white;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: var(--color-text-light);
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .password-toggle:hover {
+            color: var(--color-text);
+        }
+        .password-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+        .auth-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            font-size: 0.9rem;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: var(--color-text);
+            margin: 0;
+        }
+        .checkbox-label input {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--color-primary);
+        }
+        .forgot-link {
+            color: var(--color-primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .btn-submit.loading .btn-text {
+            visibility: hidden;
+        }
+        .btn-submit.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .auth-footer {
+            margin-top: var(--spacing-xl);
+            text-align: center;
+            color: var(--color-text-light);
+            font-size: 0.95rem;
+        }
+        .auth-footer a {
+            color: var(--color-primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+        .error-message {
+            color: var(--color-danger);
+            font-size: 0.9rem;
+            margin-top: 6px;
+            display: none;
+        }
+        
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            bottom: var(--spacing-xl);
+            right: var(--spacing-xl);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+        .toast {
+            background: white;
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            box-shadow: var(--shadow-lg);
+            border-left: 4px solid var(--color-success);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .toast.show {
+            transform: translateX(0);
+        }
+        .toast.info {
+            border-left-color: var(--color-primary);
+        }
+        .toast svg {
+            flex-shrink: 0;
+            color: inherit;
+        }
+        .toast.success svg {
+            color: var(--color-success);
+        }
+        .toast.info svg {
+            color: var(--color-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-layout">
+        <!-- Left Side: Branding -->
+        <div class="auth-branding slide-up">
+            <div class="branding-content stagger-children">
+                <h1>Kalpa AI</h1>
+                <p>Enterprise merchant portal for seamless business operations.</p>
+                <ul class="auth-features">
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        Intelligent AI-driven analytics
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        Centralized inventory management
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        Automated multichannel selling
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right Side: Form -->
+        <div class="auth-form-side fade-in">
+            <div class="auth-form-container">
+                <div class="auth-header">
+                    <h2>Welcome back</h2>
+                    <p>Enter your details to access your merchant portal.</p>
+                </div>
+
+                <form id="loginForm" class="stagger-children">
+                    <div class="form-group">
+                        <label for="email" class="form-label">Business Email</label>
+                        <div class="input-icon-wrapper">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            <input type="email" id="email" class="form-input" placeholder="name@company.com" required autocomplete="email">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-icon-wrapper">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            <input type="password" id="password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+                            <button type="button" class="password-toggle" id="togglePassword" aria-label="Toggle password visibility">
+                                <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                        </div>
+                        <div id="loginError" class="error-message">Invalid email or password.</div>
+                    </div>
+
+                    <div class="auth-actions">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="rememberMe">
+                            <span>Remember me</span>
+                        </label>
+                        <a href="#" id="forgotPassword" class="forgot-link">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-submit" id="submitBtn">
+                        <span class="btn-text">Sign In</span>
+                    </button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Don't have an account? <a href="register.html">Register</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="js/store.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/animations.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Must be guest
+            if (typeof KalpaAuth !== 'undefined') {
+                KalpaAuth.requireGuest();
+            }
+
+            const loginForm = document.getElementById('loginForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const rememberMeInput = document.getElementById('rememberMe');
+            const togglePasswordBtn = document.getElementById('togglePassword');
+            const forgotPasswordLink = document.getElementById('forgotPassword');
+            const loginError = document.getElementById('loginError');
+
+            // Handle Toast Notifications
+            function showToast(message, type = 'success') {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                
+                let icon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
+                if (type === 'info') {
+                    icon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+                }
+                
+                toast.innerHTML = `
+                    ${icon}
+                    <span>${message}</span>
+                `;
+                container.appendChild(toast);
+                
+                // Trigger reflow
+                void toast.offsetWidth;
+                toast.classList.add('show');
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            // Check URL parameters for registration success
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('registered') === 'true') {
+                showToast('Account created successfully! Please sign in.', 'success');
+                // Clean up URL without refreshing page
+                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.replaceState({path:newUrl}, '', newUrl);
+            }
+
+            // Toggle Password Visibility
+            togglePasswordBtn.addEventListener('click', () => {
+                const type = passwordInput.type === 'password' ? 'text' : 'password';
+                passwordInput.type = type;
+                
+                if (type === 'text') {
+                    togglePasswordBtn.innerHTML = '<svg class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+                } else {
+                    togglePasswordBtn.innerHTML = '<svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+                }
+            });
+
+            // Forgot Password Link
+            forgotPasswordLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showToast('Password reset email sent', 'info');
+            });
+
+            // Handle Login Submit
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                loginError.style.display = 'none';
+                
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
+                const rememberMe = rememberMeInput.checked;
+                
+                submitBtn.classList.add('loading');
+                submitBtn.disabled = true;
+
+                try {
+                    const res = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password, rememberMe })
+                    });
+                    const result = await res.json();
+                    
+                    if (res.ok && result.success) {
+                        if (typeof KalpaAuth !== 'undefined') {
+                            KalpaAuth._set('session', {
+                                merchantId: result.merchant.id,
+                                email: result.merchant.email,
+                                name: result.merchant.name,
+                                businessName: result.merchant.businessName,
+                                loginAt: new Date().toISOString(),
+                                rememberMe: rememberMe
+                            });
+                        }
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        loginError.style.display = 'block';
+                        loginError.textContent = result.error || 'Invalid email or password.';
+                        submitBtn.classList.remove('loading');
+                        submitBtn.disabled = false;
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    loginError.style.display = 'block';
+                    loginError.textContent = 'An error occurred during login. Please try again.';
+                    submitBtn.classList.remove('loading');
+                    submitBtn.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Copilot | Kalpa AI</title>
+    <meta name="description" content="AI-powered business intelligence assistant for hyperlocal retail merchants.">
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <style>
+        .copilot-layout {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: var(--space-6);
+            align-items: start;
+        }
+
+        .copilot-hero {
+            background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+            border: var(--border-width) solid var(--color-primary-200);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6) var(--space-8);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-6);
+        }
+
+        .copilot-hero-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-5);
+        }
+
+        .copilot-icon-box {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--color-primary), #4F46E5);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .copilot-icon-box svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .copilot-hero h2 {
+            font-size: var(--text-xl);
+            font-weight: var(--font-bold);
+            margin-bottom: var(--space-1);
+        }
+
+        .copilot-hero p {
+            font-size: var(--text-sm);
+            color: var(--color-gray-600);
+        }
+
+        .insight-card {
+            background: var(--color-white);
+            border: var(--border-width) solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: var(--space-5) var(--space-6);
+            margin-bottom: var(--space-4);
+            transition: all var(--transition-base);
+            cursor: default;
+        }
+
+        .insight-card:hover {
+            box-shadow: var(--shadow-card-hover);
+            transform: translateY(-1px);
+        }
+
+        .insight-header {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-3);
+            margin-bottom: var(--space-3);
+        }
+
+        .insight-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 18px;
+        }
+
+        .insight-icon.restock { background: var(--color-warning-light); }
+        .insight-icon.offer { background: #FEF3C7; }
+        .insight-icon.trend { background: var(--color-success-light); }
+        .insight-icon.alert { background: var(--color-danger-light); }
+        .insight-icon.bundle { background: #F3E8FF; }
+        .insight-icon.campaign { background: var(--color-info-light); }
+
+        .insight-title {
+            font-size: var(--text-md);
+            font-weight: var(--font-semibold);
+            color: var(--color-gray-900);
+            margin-bottom: 2px;
+        }
+
+        .insight-subtitle {
+            font-size: var(--text-xs);
+            color: var(--color-gray-400);
+        }
+
+        .insight-body {
+            font-size: var(--text-sm);
+            color: var(--color-gray-600);
+            line-height: var(--leading-relaxed);
+            margin-bottom: var(--space-4);
+        }
+
+        .insight-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-3);
+        }
+
+        .insight-impact {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: var(--text-xs);
+            color: var(--color-gray-500);
+        }
+
+        .insight-impact-value {
+            font-weight: var(--font-semibold);
+            color: var(--color-primary);
+        }
+
+        .insight-actions {
+            display: flex;
+            gap: var(--space-2);
+        }
+
+        /* Right Panel */
+        .copilot-panel {
+            position: sticky;
+            top: calc(var(--navbar-height) + var(--space-6));
+        }
+
+        .health-ring-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-6);
+        }
+
+        .health-ring {
+            position: relative;
+            width: 140px;
+            height: 140px;
+        }
+
+        .health-ring svg {
+            transform: rotate(-90deg);
+        }
+
+        .health-ring-bg {
+            fill: none;
+            stroke: var(--color-gray-100);
+            stroke-width: 10;
+        }
+
+        .health-ring-fill {
+            fill: none;
+            stroke: var(--color-primary);
+            stroke-width: 10;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .health-ring-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .health-ring-value {
+            font-size: var(--text-2xl);
+            font-weight: var(--font-bold);
+            color: var(--color-gray-900);
+            line-height: 1;
+        }
+
+        .health-ring-text {
+            font-size: var(--text-xs);
+            color: var(--color-gray-500);
+            margin-top: 2px;
+        }
+
+        .panel-list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-3) var(--space-4);
+            border-bottom: var(--border-width) solid var(--border-light);
+        }
+
+        .panel-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .panel-list-name {
+            font-size: var(--text-sm);
+            color: var(--color-gray-700);
+            font-weight: var(--font-medium);
+        }
+
+        .panel-list-value {
+            font-size: var(--text-xs);
+            color: var(--color-gray-500);
+        }
+
+        @media (max-width: 1024px) {
+            .copilot-layout {
+                grid-template-columns: 1fr;
+            }
+            .copilot-panel {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <div class="app-main">
+            <div class="page-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="page-header-row">
+                        <div>
+                            <h1 class="page-title">AI Copilot</h1>
+                            <p class="page-subtitle">Intelligent business recommendations powered by AI</p>
+                        </div>
+                        <div class="ai-indicator">
+                            <span class="ai-indicator-dot"></span>
+                            AI Active
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Banner -->
+                <div class="copilot-hero animate-slide-up">
+                    <div class="copilot-hero-left">
+                        <div class="copilot-icon-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                        </div>
+                        <div>
+                            <h2>Kalpa AI Copilot</h2>
+                            <p>Your AI business assistant analyzes your store data and provides actionable insights to grow revenue.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="copilot-layout">
+                    <!-- Left: Insights Feed -->
+                    <div>
+                        <h3 style="font-size: var(--text-md); font-weight: var(--font-semibold); margin-bottom: var(--space-4); color: var(--color-gray-800);">Business Insights</h3>
+                        <div id="insights-feed" class="stagger-children"></div>
+                    </div>
+
+                    <!-- Right: Stats Panel -->
+                    <div class="copilot-panel">
+                        <!-- Inventory Health -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h4>Inventory Health</h4>
+                            </div>
+                            <div class="health-ring-container">
+                                <div class="health-ring">
+                                    <svg width="140" height="140" viewBox="0 0 140 140">
+                                        <circle class="health-ring-bg" cx="70" cy="70" r="58"/>
+                                        <circle class="health-ring-fill" cx="70" cy="70" r="58"
+                                            stroke-dasharray="364.4"
+                                            id="health-ring-circle"/>
+                                    </svg>
+                                    <div class="health-ring-label">
+                                        <div class="health-ring-value" id="health-value">0%</div>
+                                        <div class="health-ring-text">Healthy</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Confidence -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h4>AI Confidence</h4>
+                            </div>
+                            <div class="card-body" style="text-align: center; padding-top: var(--space-4); padding-bottom: var(--space-4);">
+                                <div style="font-size: var(--text-3xl); font-weight: var(--font-bold); color: var(--color-gray-900);" id="ai-confidence-value">0%</div>
+                                <p style="font-size: var(--text-xs); color: var(--color-gray-500); margin-top: var(--space-1);">Average across all products</p>
+                                <div class="progress-bar mt-3">
+                                    <div class="progress-bar-fill success" id="ai-confidence-bar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Top Searched (simulated) -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Popular Categories</h4>
+                            </div>
+                            <div id="popular-categories"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/store.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/layout.js"></script>
+    <script src="js/animations.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            KalpaLayout.init();
+            renderInsights();
+            renderPanel();
+        });
+
+        function renderInsights() {
+            const stats = KalpaStore.getStats();
+            const products = KalpaStore.getProducts();
+            const lowStockProducts = products.filter(p => p.stock > 0 && p.stock <= 10);
+            const outOfStockProducts = products.filter(p => p.stock === 0);
+            const topProducts = KalpaStore.getTopProducts(3);
+            const categories = KalpaStore.getSalesByCategory();
+
+            const insights = [];
+
+            /* Restock suggestions */
+            lowStockProducts.slice(0, 3).forEach(p => {
+                insights.push({
+                    icon: '📦',
+                    iconClass: 'restock',
+                    title: `Restock ${p.name.split(' - ')[0]}`,
+                    subtitle: 'Inventory Alert',
+                    body: `Current stock is ${p.stock} units, which is below the recommended threshold. Based on recent sales velocity, this product may go out of stock within ${Math.ceil(p.stock / 2)} days.`,
+                    impact: `${p.stock} units remaining`,
+                    impactLabel: 'Current Stock',
+                    priority: 'high',
+                });
+            });
+
+            /* Out of stock alerts */
+            outOfStockProducts.slice(0, 2).forEach(p => {
+                insights.push({
+                    icon: '🚨',
+                    iconClass: 'alert',
+                    title: `${p.name.split(' - ')[0]} is Out of Stock`,
+                    subtitle: 'Critical Alert',
+                    body: `This product has been out of stock since ${KalpaLayout.formatDate(p.updatedAt)}. You may be losing potential sales. Consider restocking immediately.`,
+                    impact: '₹0 revenue lost',
+                    impactLabel: 'Revenue Impact',
+                    priority: 'critical',
+                });
+            });
+
+            /* Offer suggestion */
+            insights.push({
+                icon: '🎉',
+                iconClass: 'offer',
+                title: 'Create Weekend Offer',
+                subtitle: 'Revenue Opportunity',
+                body: `Based on your sales patterns, weekends show 23% higher traffic. Create a 10-15% discount on your top-selling ${categories[0]?.label || 'products'} to maximize revenue.`,
+                impact: '+₹' + KalpaLayout.formatCurrency(Math.round(stats.totalRevenue * 0.08)).replace('₹', '') + ' estimated',
+                impactLabel: 'Potential Revenue',
+                priority: 'medium',
+            });
+
+            /* Trending category */
+            if (categories.length > 0) {
+                insights.push({
+                    icon: '🔥',
+                    iconClass: 'trend',
+                    title: `Trending: ${categories[0].label}`,
+                    subtitle: 'Market Intelligence',
+                    body: `${categories[0].label} is your top-performing category with ₹${categories[0].value.toLocaleString('en-IN')} in revenue. Consider expanding your inventory in this category to capture more demand.`,
+                    impact: '₹' + categories[0].value.toLocaleString('en-IN'),
+                    impactLabel: 'Category Revenue',
+                    priority: 'medium',
+                });
+            }
+
+            /* Bundle recommendation */
+            insights.push({
+                icon: '🎁',
+                iconClass: 'bundle',
+                title: 'Bundle Recommendations',
+                subtitle: 'Cross-sell Opportunity',
+                body: 'Customers who purchase Sarees often also buy Blouse Pieces and Accessories. Create a curated bundle to increase average order value by 20-30%.',
+                impact: '+20-30% AOV',
+                impactLabel: 'Estimated Impact',
+                priority: 'medium',
+            });
+
+            /* Festival campaign */
+            insights.push({
+                icon: '🎆',
+                iconClass: 'campaign',
+                title: 'Generate Festival Campaign',
+                subtitle: 'Seasonal Opportunity',
+                body: 'Festival season is approaching. Create a curated collection with festive ethnic wear, jewelry, and home textiles. Historical data shows 40% revenue boost during festivals.',
+                impact: '+40% revenue',
+                impactLabel: 'Historical Impact',
+                priority: 'medium',
+            });
+
+            /* Dead stock */
+            const oldProducts = products.filter(p => {
+                const daysSince = (Date.now() - new Date(p.updatedAt).getTime()) / 86400000;
+                return daysSince > 20 && p.stock > 15;
+            });
+            if (oldProducts.length > 0) {
+                insights.push({
+                    icon: '📊',
+                    iconClass: 'alert',
+                    title: `Dead Stock Detected: ${oldProducts.length} Products`,
+                    subtitle: 'Inventory Optimization',
+                    body: `${oldProducts.length} products haven't had recent activity and have significant stock. Consider running clearance pricing or creating promotional bundles to move this inventory.`,
+                    impact: oldProducts.length + ' products',
+                    impactLabel: 'Affected Items',
+                    priority: 'low',
+                });
+            }
+
+            /* Render insights */
+            const feed = document.getElementById('insights-feed');
+            feed.innerHTML = insights.map(insight => `
+                <div class="insight-card">
+                    <div class="insight-header">
+                        <div class="insight-icon ${insight.iconClass}">${insight.icon}</div>
+                        <div style="flex: 1;">
+                            <div class="insight-title">${insight.title}</div>
+                            <div class="insight-subtitle">${insight.subtitle}</div>
+                        </div>
+                        <span class="badge ${insight.priority === 'critical' ? 'badge-danger' : insight.priority === 'high' ? 'badge-warning' : 'badge-info'}">
+                            ${insight.priority === 'critical' ? 'Critical' : insight.priority === 'high' ? 'High Priority' : 'Suggestion'}
+                        </span>
+                    </div>
+                    <div class="insight-body">${insight.body}</div>
+                    <div class="insight-meta">
+                        <div class="insight-impact">
+                            <span>${insight.impactLabel}:</span>
+                            <span class="insight-impact-value">${insight.impact}</span>
+                        </div>
+                        <div class="insight-actions">
+                            <button class="btn btn-primary btn-sm" onclick="applyInsight('${insight.title}')">Apply</button>
+                            <button class="btn btn-ghost btn-sm" onclick="dismissInsight(this)">Dismiss</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderPanel() {
+            const stats = KalpaStore.getStats();
+            const products = KalpaStore.getProducts();
+
+            /* Inventory Health Ring */
+            const totalProducts = stats.totalProducts;
+            const healthyProducts = products.filter(p => p.stock > 10).length;
+            const healthPct = totalProducts > 0 ? Math.round((healthyProducts / totalProducts) * 100) : 0;
+            const circumference = 364.4;
+            const offset = circumference - (circumference * healthPct / 100);
+
+            const ring = document.getElementById('health-ring-circle');
+            ring.style.strokeDashoffset = circumference;
+            setTimeout(() => {
+                ring.style.strokeDashoffset = offset;
+            }, 300);
+            document.getElementById('health-value').textContent = healthPct + '%';
+
+            /* AI Confidence */
+            const confPct = Math.round(stats.avgConfidence * 100);
+            document.getElementById('ai-confidence-value').textContent = confPct + '%';
+            setTimeout(() => {
+                document.getElementById('ai-confidence-bar').style.width = confPct + '%';
+            }, 500);
+
+            /* Popular Categories */
+            const categoryCounts = {};
+            products.forEach(p => {
+                if (p.category) {
+                    categoryCounts[p.category] = (categoryCounts[p.category] || 0) + 1;
+                }
+            });
+            const sortedCats = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
+            const catContainer = document.getElementById('popular-categories');
+            catContainer.innerHTML = sortedCats.map(([name, count]) => `
+                <div class="panel-list-item">
+                    <span class="panel-list-name">${name}</span>
+                    <span class="panel-list-value">${count} products</span>
+                </div>
+            `).join('');
+        }
+
+        function applyInsight(title) {
+            KalpaAnimations.showToast('Insight Applied', `"${title}" has been applied to your strategy`, 'success');
+        }
+
+        function dismissInsight(btn) {
+            const card = btn.closest('.insight-card');
+            card.style.opacity = '0';
+            card.style.transform = 'translateX(20px)';
+            card.style.transition = 'all 0.3s ease';
+            setTimeout(() => card.remove(), 300);
+        }
+    </script>
+</body>
+</html>

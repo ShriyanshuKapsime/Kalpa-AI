@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Kalpa AI</title>
+    <meta name="description" content="Register your business with Kalpa AI - The AI Commerce Operating System for Hyperlocal Retail.">
+    
+    <!-- CSS Dependencies -->
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/animations.css">
+
+    <!-- Auth specific inline styles for split screen -->
+    <style>
+        .auth-layout {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+            background-color: var(--color-bg-primary, #ffffff);
+        }
+        
+        .auth-branding {
+            flex: 1;
+            background-color: var(--color-primary, #2563EB);
+            color: white;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            .auth-branding {
+                display: flex;
+            }
+        }
+
+        .auth-branding h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .auth-branding p.tagline {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: 3rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.125rem;
+        }
+
+        .feature-list li svg {
+            width: 24px;
+            height: 24px;
+            margin-right: 1rem;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .auth-form-side {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .auth-header {
+            margin-bottom: 2rem;
+        }
+
+        .auth-header h2 {
+            font-size: 2rem;
+            color: var(--color-text-primary, #111827);
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-header p {
+            color: var(--color-text-secondary, #6B7280);
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--color-text-primary, #374151);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--color-border, #D1D5DB);
+            border-radius: var(--radius-md, 0.375rem);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background-color: var(--color-bg-primary, #ffffff);
+            color: var(--color-text-primary, #111827);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--color-primary, #2563EB);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-input.error, .form-select.error, .form-textarea.error {
+            border-color: var(--color-danger, #EF4444);
+        }
+
+        .form-input.success, .form-select.success, .form-textarea.success {
+            border-color: var(--color-success, #10B981);
+        }
+
+        .form-error {
+            display: none;
+            color: var(--color-danger, #EF4444);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .form-error.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .password-input-wrap {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--color-text-secondary, #6B7280);
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .password-toggle:hover {
+            color: var(--color-text-primary, #374151);
+        }
+
+        .strength-meter {
+            height: 4px;
+            background-color: var(--color-border, #E5E7EB);
+            border-radius: 2px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        .strength-label {
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            text-align: right;
+            color: var(--color-text-secondary, #6B7280);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            border-radius: var(--radius-md, 0.375rem);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--color-primary, #2563EB);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #1D4ED8;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .auth-footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            color: var(--color-text-secondary, #6B7280);
+        }
+
+        .auth-footer a {
+            color: var(--color-primary, #2563EB);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .global-error {
+            display: none;
+            background-color: #FEF2F2;
+            color: #B91C1C;
+            border: 1px solid #F87171;
+            padding: 0.75rem;
+            border-radius: var(--radius-md, 0.375rem);
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .global-error.visible {
+            display: block;
+            animation: slideInDown 0.3s ease;
+        }
+
+        /* Spinner animation for button */
+        .spinner {
+            display: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 0.5rem;
+        }
+        
+        .btn.loading .spinner {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-layout">
+        <!-- Left Side: Branding -->
+        <div class="auth-branding">
+            <h1>Kalpa AI</h1>
+            <p class="tagline">AI Commerce Operating System for Hyperlocal Retail</p>
+            
+            <ul class="feature-list">
+                <li>
+                    <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    AI Storefront Creation
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+                    AI Product Listing
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline><polyline points="7.5 19.79 7.5 14.6 3 12"></polyline><polyline points="21 12 16.5 14.6 16.5 19.79"></polyline><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                    Smart Inventory Management
+                </li>
+            </ul>
+        </div>
+
+        <!-- Right Side: Form -->
+        <div class="auth-form-side">
+            <div class="auth-header">
+                <h2>Create Account</h2>
+                <p>Join Kalpa AI to revolutionize your retail business.</p>
+            </div>
+
+            <div id="globalError" class="global-error"></div>
+
+            <form id="registerForm" novalidate>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="merchantName" class="form-label">Merchant Name</label>
+                        <input type="text" id="merchantName" name="merchantName" class="form-input" placeholder="John Doe" required>
+                        <div class="form-error" id="merchantNameError">Please enter at least 2 characters.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="businessName" class="form-label">Business Name</label>
+                        <input type="text" id="businessName" name="businessName" class="form-input" placeholder="Acme Retail" required>
+                        <div class="form-error" id="businessNameError">Please enter at least 2 characters.</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email" class="form-label">Business Email</label>
+                        <input type="email" id="email" name="email" class="form-input" placeholder="john@acmeretail.com" required>
+                        <div class="form-error" id="emailError">Please enter a valid email address.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" class="form-input" placeholder="+1234567890" required>
+                        <div class="form-error" id="phoneError">Please enter a valid phone number (10+ digits).</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="password-input-wrap">
+                        <input type="password" id="password" name="password" class="form-input" placeholder="••••••••" required>
+                        <button type="button" class="password-toggle" id="togglePassword" aria-label="Toggle password visibility">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                    <div class="strength-meter">
+                        <div class="strength-bar" id="strengthBar"></div>
+                    </div>
+                    <div class="strength-label" id="strengthLabel"></div>
+                    <div class="form-error" id="passwordError">Password must be at least 6 characters.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <div class="password-input-wrap">
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" placeholder="••••••••" required>
+                        <button type="button" class="password-toggle" id="toggleConfirmPassword" aria-label="Toggle confirm password visibility">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                    <div class="form-error" id="confirmPasswordError">Passwords do not match.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="businessCategory" class="form-label">Business Category</label>
+                    <select id="businessCategory" name="businessCategory" class="form-select" required>
+                        <option value="" disabled selected>Select a category</option>
+                        <!-- Options populated by JS -->
+                    </select>
+                    <div class="form-error" id="businessCategoryError">Please select a business category.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="businessAddress" class="form-label">Business Address</label>
+                    <textarea id="businessAddress" name="businessAddress" class="form-textarea" placeholder="123 Commerce St, City, Country" required></textarea>
+                    <div class="form-error" id="businessAddressError">Please enter your complete business address (min 5 chars).</div>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn btn-primary">
+                    <div class="spinner"></div>
+                    <span class="btn-text">Create Account</span>
+                </button>
+
+                <div class="auth-footer">
+                    Already have an account? <a href="login.html">Sign in</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JS Dependencies -->
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Protect route - must be guest
+            if (typeof KalpaAuth !== 'undefined' && KalpaAuth.requireGuest) {
+                KalpaAuth.requireGuest();
+            }
+
+            // Populate Business Categories
+            const categorySelect = document.getElementById('businessCategory');
+            if (typeof KalpaAuth !== 'undefined' && KalpaAuth.getBusinessCategories) {
+                const categories = KalpaAuth.getBusinessCategories();
+                categories.forEach(cat => {
+                    const option = document.createElement('option');
+                    // Handle array of strings or array of objects
+                    if (typeof cat === 'object') {
+                        option.value = cat.value || cat.id;
+                        option.textContent = cat.label || cat.name;
+                    } else {
+                        option.value = cat;
+                        option.textContent = cat;
+                    }
+                    categorySelect.appendChild(option);
+                });
+            } else {
+                // Fallback dummy categories if getBusinessCategories is missing
+                const fallbackCategories = ['Grocery', 'Electronics', 'Clothing', 'Pharmacy', 'Other'];
+                fallbackCategories.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.toLowerCase();
+                    option.textContent = cat;
+                    categorySelect.appendChild(option);
+                });
+            }
+
+            // Form Elements
+            const form = document.getElementById('registerForm');
+            const inputs = form.querySelectorAll('input, select, textarea');
+            const submitBtn = document.getElementById('submitBtn');
+            const globalError = document.getElementById('globalError');
+
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirmPassword');
+            const strengthBar = document.getElementById('strengthBar');
+            const strengthLabel = document.getElementById('strengthLabel');
+            
+            // Toggle Password Visibility
+            const setupPasswordToggle = (inputId, toggleId) => {
+                const input = document.getElementById(inputId);
+                const toggle = document.getElementById(toggleId);
+                const svg = toggle.querySelector('svg');
+                
+                toggle.addEventListener('click', () => {
+                    const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                    input.setAttribute('type', type);
+                    
+                    if (type === 'text') {
+                        svg.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+                    } else {
+                        svg.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+                    }
+                });
+            };
+
+            setupPasswordToggle('password', 'togglePassword');
+            setupPasswordToggle('confirmPassword', 'toggleConfirmPassword');
+
+            // Validation Rules
+            const validateField = (input) => {
+                const id = input.id;
+                const value = input.value.trim();
+                let isValid = true;
+
+                if (id === 'merchantName' || id === 'businessName') {
+                    isValid = value.length >= 2;
+                } else if (id === 'email') {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    isValid = emailRegex.test(value);
+                } else if (id === 'phone') {
+                    const phoneRegex = /^[\d\+\-\s]{10,}$/;
+                    isValid = phoneRegex.test(value) && value.replace(/[\D]/g, '').length >= 10;
+                } else if (id === 'password') {
+                    isValid = value.length >= 6;
+                } else if (id === 'confirmPassword') {
+                    isValid = value === password.value && value.length >= 6;
+                } else if (id === 'businessCategory') {
+                    isValid = value !== '';
+                } else if (id === 'businessAddress') {
+                    isValid = value.length >= 5;
+                }
+
+                const errorMsg = document.getElementById(`${id}Error`);
+                
+                if (isValid) {
+                    input.classList.remove('error');
+                    if(value) input.classList.add('success');
+                    if (errorMsg) errorMsg.classList.remove('visible');
+                } else {
+                    input.classList.remove('success');
+                    if (value || input.dataset.touched) {
+                        input.classList.add('error');
+                        if (errorMsg) errorMsg.classList.add('visible');
+                    }
+                }
+
+                return isValid;
+            };
+
+            // Password Strength Meter
+            const updateStrengthMeter = () => {
+                const val = password.value;
+                let strength = 0;
+                
+                if (val.length > 0) strength += 1;
+                if (val.length >= 6) strength += 1;
+                if (/[A-Z]/.test(val)) strength += 1;
+                if (/[0-9]/.test(val)) strength += 1;
+                if (/[^A-Za-z0-9]/.test(val)) strength += 1;
+
+                let width = '0%';
+                let color = 'var(--color-border, #E5E7EB)';
+                let text = '';
+
+                switch(strength) {
+                    case 0: width = '0%'; text = ''; break;
+                    case 1: 
+                    case 2: width = '33%'; color = '#EF4444'; text = 'Weak'; break; // Red
+                    case 3: 
+                    case 4: width = '66%'; color = '#F59E0B'; text = 'Good'; break; // Yellow
+                    case 5: width = '100%'; color = '#10B981'; text = 'Strong'; break; // Green
+                }
+
+                strengthBar.style.width = width;
+                strengthBar.style.backgroundColor = color;
+                strengthLabel.textContent = text;
+                
+                // Revalidate confirm password if it's already filled
+                if(confirmPassword.value) validateField(confirmPassword);
+            };
+
+            password.addEventListener('input', updateStrengthMeter);
+
+            // Bind Blur & Input Events for Inline Validation
+            inputs.forEach(input => {
+                input.addEventListener('blur', () => {
+                    input.dataset.touched = 'true';
+                    validateField(input);
+                });
+                
+                input.addEventListener('input', () => {
+                    if (input.dataset.touched) {
+                        validateField(input);
+                    } else if (input.classList.contains('error')) {
+                        validateField(input);
+                    }
+                });
+            });
+
+            // Form Submit Handler
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                // Mark all touched and validate
+                let isFormValid = true;
+                inputs.forEach(input => {
+                    input.dataset.touched = 'true';
+                    if (!validateField(input)) {
+                        isFormValid = false;
+                    }
+                });
+
+                if (!isFormValid) return;
+
+                // Prepare Data
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+
+                // UI Loading State
+                submitBtn.classList.add('loading');
+                submitBtn.disabled = true;
+                const btnText = submitBtn.querySelector('.btn-text');
+                const originalText = btnText.textContent;
+                btnText.textContent = 'Creating Account...';
+                globalError.classList.remove('visible');
+
+                try {
+                    const res = await fetch('/api/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await res.json();
+                    
+                    if (res.ok && result.success) {
+                        if (typeof KalpaAuth !== 'undefined') {
+                            KalpaAuth._set('session', {
+                                merchantId: result.merchant.id,
+                                email: result.merchant.email,
+                                name: result.merchant.name,
+                                businessName: result.merchant.businessName,
+                                loginAt: new Date().toISOString(),
+                                rememberMe: false
+                            });
+                        }
+                        window.location.href = 'onboarding.html';
+                    } else {
+                        throw new Error(result.error || 'Registration failed. Please try again.');
+                    }
+                } catch (error) {
+                    globalError.textContent = error.message;
+                    globalError.classList.add('visible');
+                    
+                    submitBtn.classList.remove('loading');
+                    submitBtn.disabled = false;
+                    btnText.textContent = originalText;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

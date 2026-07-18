@@ -1,0 +1,615 @@
+/* ============================================
+   KALPA AI — Animations & Loading States
+   Skeletons, Transitions, AI Pipeline, Micro-interactions
+   ============================================ */
+
+/* ============================================
+   Page Entrance
+   ============================================ */
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slide-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-down {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.3s ease forwards;
+}
+
+.animate-slide-up {
+    animation: slide-up 0.4s ease forwards;
+}
+
+.animate-slide-down {
+    animation: slide-down 0.4s ease forwards;
+}
+
+.animate-scale-in {
+    animation: scale-in 0.3s ease forwards;
+}
+
+/* Staggered entrance for grids */
+.stagger-children > * {
+    opacity: 0;
+    animation: slide-up 0.4s ease forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0.0s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.3s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.35s; }
+
+/* ============================================
+   Skeleton Loading
+   ============================================ */
+@keyframes skeleton-shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--color-gray-100) 25%,
+        var(--color-gray-200) 37%,
+        var(--color-gray-100) 63%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s ease infinite;
+    border-radius: var(--radius-md);
+}
+
+.skeleton-text {
+    height: 14px;
+    width: 100%;
+    margin-bottom: var(--space-2);
+}
+
+.skeleton-text.short { width: 60%; }
+.skeleton-text.medium { width: 80%; }
+.skeleton-text.xs { height: 10px; }
+.skeleton-text.lg { height: 20px; }
+
+.skeleton-heading {
+    height: 24px;
+    width: 50%;
+    margin-bottom: var(--space-4);
+}
+
+.skeleton-circle {
+    border-radius: var(--radius-full);
+}
+
+.skeleton-card {
+    padding: var(--space-5) var(--space-6);
+    background: var(--color-white);
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--radius-xl);
+}
+
+.skeleton-card .skeleton-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-3);
+}
+
+.skeleton-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+}
+
+.skeleton-img {
+    width: 100%;
+    height: 180px;
+    border-radius: var(--radius-lg);
+}
+
+.skeleton-btn {
+    width: 120px;
+    height: 38px;
+    border-radius: var(--radius-md);
+}
+
+/* Skeleton table rows */
+.skeleton-table-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: var(--border-width) solid var(--border-light);
+}
+
+.skeleton-table-row .skeleton-cell {
+    height: 14px;
+    flex: 1;
+}
+
+.skeleton-table-row .skeleton-cell-sm {
+    height: 14px;
+    width: 80px;
+    flex-shrink: 0;
+}
+
+/* ============================================
+   AI Pipeline Animation
+   ============================================ */
+.ai-pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: var(--space-4) 0;
+}
+
+.ai-pipeline-step {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+    position: relative;
+}
+
+/* Vertical connector line */
+.ai-pipeline-step::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 38px;
+    bottom: -12px;
+    width: 2px;
+    background: var(--color-gray-200);
+}
+
+.ai-pipeline-step:last-child::before {
+    display: none;
+}
+
+.ai-pipeline-step.completed::before {
+    background: var(--color-success);
+}
+
+.ai-pipeline-step.active::before {
+    background: linear-gradient(to bottom, var(--color-primary), var(--color-gray-200));
+}
+
+/* Step indicator circle */
+.ai-pipeline-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 2px solid var(--color-gray-200);
+    background: var(--color-white);
+    transition: all var(--transition-base);
+    position: relative;
+    z-index: 1;
+}
+
+.ai-pipeline-step.pending .ai-pipeline-dot {
+    border-color: var(--color-gray-200);
+    color: var(--color-gray-400);
+}
+
+.ai-pipeline-step.active .ai-pipeline-dot {
+    border-color: var(--color-primary);
+    background: var(--color-primary-50);
+    color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.ai-pipeline-step.completed .ai-pipeline-dot {
+    border-color: var(--color-success);
+    background: var(--color-success);
+    color: var(--color-white);
+}
+
+.ai-pipeline-step.error .ai-pipeline-dot {
+    border-color: var(--color-danger);
+    background: var(--color-danger-light);
+    color: var(--color-danger);
+}
+
+.ai-pipeline-dot svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Step content */
+.ai-pipeline-info {
+    flex: 1;
+    padding-top: 4px;
+}
+
+.ai-pipeline-title {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--color-gray-800);
+    margin-bottom: 2px;
+}
+
+.ai-pipeline-step.pending .ai-pipeline-title {
+    color: var(--color-gray-400);
+}
+
+.ai-pipeline-desc {
+    font-size: var(--text-xs);
+    color: var(--color-gray-400);
+}
+
+.ai-pipeline-step.active .ai-pipeline-desc {
+    color: var(--color-primary);
+}
+
+.ai-pipeline-step.completed .ai-pipeline-desc {
+    color: var(--color-success);
+}
+
+/* ============================================
+   Pulsing AI Indicator
+   ============================================ */
+@keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.5; }
+}
+
+@keyframes pulse-ring {
+    0% { transform: scale(1); opacity: 0.5; }
+    100% { transform: scale(2); opacity: 0; }
+}
+
+.ai-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--color-primary);
+}
+
+.ai-indicator-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--color-primary);
+    border-radius: 50%;
+    position: relative;
+}
+
+.ai-indicator-dot::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 2px solid var(--color-primary);
+    animation: pulse-ring 1.5s ease infinite;
+}
+
+/* ============================================
+   Thinking Animation (3 dots)
+   ============================================ */
+@keyframes thinking-bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+}
+
+.ai-thinking {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-primary-50);
+    border-radius: var(--radius-full);
+}
+
+.ai-thinking-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--color-primary);
+    border-radius: 50%;
+    animation: thinking-bounce 1.2s ease infinite;
+}
+
+.ai-thinking-dot:nth-child(2) { animation-delay: 0.15s; }
+.ai-thinking-dot:nth-child(3) { animation-delay: 0.3s; }
+
+/* ============================================
+   Loading Spinner
+   ============================================ */
+@keyframes spinner {
+    to { transform: rotate(360deg); }
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-gray-200);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spinner 0.6s linear infinite;
+}
+
+.spinner-sm {
+    width: 14px;
+    height: 14px;
+    border-width: 2px;
+}
+
+.spinner-lg {
+    width: 32px;
+    height: 32px;
+    border-width: 3px;
+}
+
+.spinner-white {
+    border-color: rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+}
+
+/* Full page loader */
+.page-loader {
+    position: fixed;
+    inset: 0;
+    background: var(--color-white);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-4);
+    z-index: 9999;
+}
+
+.page-loader .spinner {
+    width: 40px;
+    height: 40px;
+    border-width: 3px;
+}
+
+.page-loader-text {
+    font-size: var(--text-sm);
+    color: var(--color-gray-500);
+    font-weight: var(--font-medium);
+}
+
+/* ============================================
+   Progress Steps
+   ============================================ */
+@keyframes progress-stripes {
+    0% { background-position: 0 0; }
+    100% { background-position: 40px 0; }
+}
+
+.progress-bar-animated .progress-bar-fill {
+    background-image: linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.15) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.15) 75%,
+        transparent 75%
+    );
+    background-size: 40px 40px;
+    animation: progress-stripes 1s linear infinite;
+}
+
+/* ============================================
+   Count-up Number
+   ============================================ */
+.count-up {
+    display: inline-block;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ============================================
+   Card Hover Lift
+   ============================================ */
+.hover-lift {
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+}
+
+/* ============================================
+   Success Checkmark
+   ============================================ */
+@keyframes checkmark-draw {
+    0% { stroke-dashoffset: 48; }
+    100% { stroke-dashoffset: 0; }
+}
+
+@keyframes checkmark-circle {
+    0% { stroke-dashoffset: 166; }
+    100% { stroke-dashoffset: 0; }
+}
+
+@keyframes checkmark-scale {
+    0%, 100% { transform: scale(1); }
+    30% { transform: scale(1.1); }
+}
+
+.success-checkmark {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto;
+    animation: checkmark-scale 0.5s ease 0.5s;
+}
+
+.success-checkmark .circle {
+    stroke: var(--color-success);
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    fill: none;
+    stroke-width: 2;
+    animation: checkmark-circle 0.6s ease forwards;
+}
+
+.success-checkmark .check {
+    stroke: var(--color-success);
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    animation: checkmark-draw 0.4s ease 0.4s forwards;
+}
+
+/* ============================================
+   Ripple Effect
+   ============================================ */
+@keyframes ripple {
+    to { transform: scale(4); opacity: 0; }
+}
+
+.ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple-wave {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(0);
+    animation: ripple 0.6s ease forwards;
+    pointer-events: none;
+}
+
+/* ============================================
+   Confetti
+   ============================================ */
+@keyframes confetti-fall {
+    0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+.confetti-container {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.confetti-piece {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    top: -10px;
+    animation: confetti-fall 3s ease forwards;
+}
+
+/* ============================================
+   Smooth Number Transition
+   ============================================ */
+@keyframes number-slide-up {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.number-animate {
+    display: inline-block;
+    overflow: hidden;
+}
+
+.number-animate span {
+    display: inline-block;
+    animation: number-slide-up 0.5s ease forwards;
+}
+
+/* ============================================
+   Notification Badge Bounce
+   ============================================ */
+@keyframes badge-bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.badge-animate {
+    animation: badge-bounce 0.3s ease;
+}
+
+/* ============================================
+   Content Fade Transition
+   ============================================ */
+.fade-enter {
+    opacity: 0;
+    transform: translateY(8px);
+}
+
+.fade-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* ============================================
+   Shimmer for Loading States
+   ============================================ */
+.shimmer {
+    position: relative;
+    overflow: hidden;
+}
+
+.shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.4),
+        transparent
+    );
+    animation: skeleton-shimmer 1.5s ease infinite;
+    background-size: 200% 100%;
+}
+
+/* ============================================
+   Micro-interaction: Input Focus Glow
+   ============================================ */
+@keyframes focus-glow {
+    0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.2); }
+    100% { box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+}
+
+/* ============================================
+   Reduced Motion Preference
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

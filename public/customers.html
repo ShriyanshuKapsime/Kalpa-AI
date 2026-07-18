@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers - Kalpa AI</title>
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <div class="app-layout">
+        <div class="app-main">
+            <div class="page-content">
+                <div class="page-header">
+                    <h1>Customers</h1>
+                </div>
+                
+                <div class="stats-grid-4 stagger-children" id="customer-stats">
+                    <div class="stat-card">
+                        <div class="stat-card-title">Total Customers</div>
+                        <div class="stat-card-value" id="stat-total-customers">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title">New This Month</div>
+                        <div class="stat-card-value" id="stat-new-customers">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title">Avg Order Value</div>
+                        <div class="stat-card-value" id="stat-avg-order">₹0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-title">Retention Rate</div>
+                        <div class="stat-card-value" id="stat-retention">0%</div>
+                    </div>
+                </div>
+
+                <div class="table-container" style="margin-top: 24px;">
+                    <div class="table-toolbar" style="padding: 16px; border-bottom: 1px solid var(--color-border);">
+                        <input type="text" id="customer-search" class="form-input" placeholder="Search by name or email..." style="max-width: 300px;">
+                    </div>
+                    <table class="data-table" id="customers-table">
+                        <thead>
+                            <tr>
+                                <th>Customer Name</th>
+                                <th>Email</th>
+                                <th>Total Orders</th>
+                                <th>Lifetime Value</th>
+                                <th>Favorite Category</th>
+                                <th>AI Personalization Score</th>
+                                <th>Last Order</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customers-body">
+                        </tbody>
+                    </table>
+                    <div id="customers-pagination" class="pagination-container" style="padding: 16px; border-top: 1px solid var(--color-border);"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/store.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/layout.js"></script>
+    <script src="js/animations.js"></script>
+    <script src="js/charts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            KalpaLayout.init();
+            
+            const customers = KalpaStore.getCustomers();
+            let filteredCustomers = [...customers];
+            const itemsPerPage = 10;
+            let currentPage = 1;
+
+            // Stats
+            const totalCustomers = customers.length;
+            const newThisMonth = Math.floor(Math.random() * 50) + 10;
+            const retentionRate = Math.floor(Math.random() * (85 - 60 + 1) + 60);
+            
+            let totalOrders = 0;
+            let totalRevenue = 0;
+            customers.forEach(c => {
+                totalOrders += c.orders;
+                totalRevenue += c.spent;
+            });
+            const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+            KalpaAnimations.animateCounter(document.getElementById('stat-total-customers'), totalCustomers, { prefix: '' });
+            KalpaAnimations.animateCounter(document.getElementById('stat-new-customers'), newThisMonth, { prefix: '' });
+            KalpaAnimations.animateCounter(document.getElementById('stat-avg-order'), avgOrderValue, { prefix: '₹' });
+            KalpaAnimations.animateCounter(document.getElementById('stat-retention'), retentionRate, { suffix: '%' });
+
+            // Table rendering
+            const renderTable = (page) => {
+                const tbody = document.getElementById('customers-body');
+                tbody.innerHTML = '';
+                
+                const start = (page - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+                const pageData = filteredCustomers.slice(start, end);
+
+                pageData.forEach(customer => {
+                    const tr = document.createElement('tr');
+                    
+                    const initial = customer.name.charAt(0).toUpperCase();
+                    const aiScore = Math.floor(Math.random() * 40) + 60; // 60-100 score
+                    const aiScoreDec = aiScore / 100;
+                    
+                    tr.innerHTML = `
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
+                                    ${initial}
+                                </div>
+                                <span style="font-weight: 500;">${customer.name}</span>
+                            </div>
+                        </td>
+                        <td style="color: var(--color-text-light);">${customer.email}</td>
+                        <td>${customer.orders}</td>
+                        <td style="font-weight: 500;">${formatCurrency(customer.spent)}</td>
+                        <td><span class="badge badge-neutral">${customer.favoriteCategory || 'Various'}</span></td>
+                        <td>${confidenceBadge(aiScoreDec)}</td>
+                        <td style="color: var(--color-text-light);">${formatDate(customer.lastOrder)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                renderPagination('customers-pagination', filteredCustomers.length, itemsPerPage, page, (newPage) => {
+                    currentPage = newPage;
+                    renderTable(newPage);
+                });
+            };
+
+            // Search
+            document.getElementById('customer-search').addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                filteredCustomers = customers.filter(c => 
+                    c.name.toLowerCase().includes(query) || 
+                    c.email.toLowerCase().includes(query)
+                );
+                currentPage = 1;
+                renderTable(currentPage);
+            });
+
+            renderTable(currentPage);
+        });
+    </script>
+</body>
+</html>

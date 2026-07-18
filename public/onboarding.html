@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Setup | Kalpa AI</title>
+    <meta name="description" content="Set up your digital storefront with AI. Upload your shop signboard and let Kalpa AI create your online catalog.">
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <style>
+        .onboarding-card {
+            background: var(--color-white);
+            border: var(--border-width) solid var(--border-color);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-card);
+        }
+
+        .onboarding-card-header {
+            padding: var(--space-5) var(--space-6);
+            border-bottom: var(--border-width) solid var(--border-color);
+        }
+
+        .onboarding-card-body {
+            padding: var(--space-6);
+        }
+
+        .taxonomy-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-3);
+            margin-top: var(--space-3);
+        }
+
+        .taxonomy-parent {
+            background: var(--color-gray-50);
+            border: var(--border-width) solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .taxonomy-parent-name {
+            font-size: var(--text-sm);
+            font-weight: var(--font-semibold);
+            color: var(--color-gray-800);
+            margin-bottom: var(--space-2);
+        }
+
+        .taxonomy-subs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-1);
+        }
+
+        .taxonomy-sub {
+            padding: 3px 10px;
+            font-size: var(--text-xs);
+            background: var(--color-white);
+            border: var(--border-width) solid var(--color-primary-200);
+            color: var(--color-primary-700);
+            border-radius: var(--radius-full);
+            font-weight: var(--font-medium);
+        }
+
+        .result-section {
+            animation: slide-up 0.5s ease forwards;
+        }
+
+        .result-field {
+            margin-bottom: var(--space-5);
+        }
+
+        .result-field label {
+            display: block;
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            color: var(--color-gray-700);
+            margin-bottom: var(--space-2);
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--color-gray-300);
+        }
+
+        .step-dot.active {
+            background: var(--color-primary);
+        }
+
+        .step-dot.completed {
+            background: var(--color-success);
+        }
+    </style>
+</head>
+<body>
+    <div class="onboarding-layout">
+        <!-- Navbar -->
+        <nav class="onboarding-navbar">
+            <div class="flex items-center gap-3">
+                <div class="sidebar-logo-icon">K</div>
+                <div>
+                    <div style="font-size: var(--text-md); font-weight: var(--font-bold); color: var(--color-gray-900);">Kalpa<span style="color: var(--color-primary);">AI</span></div>
+                </div>
+            </div>
+
+            <div class="onboarding-steps">
+                <div class="onboarding-step completed" id="step-1">
+                    <div class="onboarding-step-number">1</div>
+                    <span class="md-hidden">Account</span>
+                </div>
+                <div class="onboarding-step-connector"></div>
+                <div class="onboarding-step active" id="step-2">
+                    <div class="onboarding-step-number">2</div>
+                    <span class="md-hidden">Store Setup</span>
+                </div>
+                <div class="onboarding-step-connector"></div>
+                <div class="onboarding-step" id="step-3">
+                    <div class="onboarding-step-number">3</div>
+                    <span class="md-hidden">Dashboard</span>
+                </div>
+            </div>
+
+            <button class="btn btn-ghost btn-sm" onclick="skipSetup()">Skip for now</button>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="onboarding-content">
+            <!-- Left: Upload Area -->
+            <div>
+                <div class="onboarding-card">
+                    <div class="onboarding-card-header">
+                        <h2 style="font-size: var(--text-xl); font-weight: var(--font-bold);">Upload Store Signboard</h2>
+                        <p style="font-size: var(--text-sm); color: var(--color-gray-500); margin-top: var(--space-1);">Our Vision AI will extract your shop details automatically</p>
+                    </div>
+                    <div class="onboarding-card-body">
+                        <!-- Upload Zone -->
+                        <div class="file-upload" id="upload-zone" onclick="document.getElementById('signboard-input').click()">
+                            <input type="file" id="signboard-input" accept="image/*" hidden>
+                            <div class="file-upload-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                            </div>
+                            <div class="file-upload-text"><strong>Click to upload</strong> or drag and drop</div>
+                            <div class="file-upload-hint">PNG, JPG, WEBP up to 10MB</div>
+                            <div class="file-upload-preview" id="upload-preview" style="display:none;">
+                                <img id="preview-img" src="" alt="Preview">
+                            </div>
+                        </div>
+
+                        <!-- Action Button -->
+                        <button class="btn btn-primary btn-block btn-lg mt-6" id="analyze-btn" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                            Analyze with AI
+                        </button>
+
+                        <!-- AI Pipeline -->
+                        <div id="pipeline-container" class="mt-6 hidden"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: AI Results -->
+            <div>
+                <!-- Initial State -->
+                <div class="onboarding-card" id="initial-state">
+                    <div class="onboarding-card-body" style="padding: var(--space-16) var(--space-8); text-align: center;">
+                        <div style="width: 64px; height: 64px; background: var(--color-primary-50); border-radius: var(--radius-2xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-5); color: var(--color-primary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/></svg>
+                        </div>
+                        <h3 style="font-size: var(--text-lg); margin-bottom: var(--space-2);">Your store details will appear here</h3>
+                        <p style="font-size: var(--text-sm); color: var(--color-gray-500); max-width: 300px; margin: 0 auto;">Upload a photo of your storefront signboard and our AI will extract all the details automatically.</p>
+                    </div>
+                </div>
+
+                <!-- Result Form (hidden initially) -->
+                <div class="onboarding-card hidden result-section" id="result-section">
+                    <div class="onboarding-card-header">
+                        <div>
+                            <h3 style="font-size: var(--text-lg); font-weight: var(--font-bold); display: flex; align-items: center; gap: var(--space-2);">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                AI Extraction Complete
+                            </h3>
+                            <p style="font-size: var(--text-xs); color: var(--color-gray-500); margin-top: 2px;">Review and edit the details below, then confirm to create your store</p>
+                        </div>
+                    </div>
+                    <div class="onboarding-card-body">
+                        <div class="result-field">
+                            <label>Store Name <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="res-shop-name" placeholder="Store name">
+                        </div>
+
+                        <div class="result-field">
+                            <label>Description</label>
+                            <textarea class="form-textarea" id="res-description" rows="3" placeholder="About your business"></textarea>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+                            <div class="result-field">
+                                <label>Phone Number</label>
+                                <input type="text" class="form-input" id="res-phone" placeholder="Contact number">
+                            </div>
+                            <div class="result-field">
+                                <label>Address</label>
+                                <input type="text" class="form-input" id="res-address" placeholder="Shop address">
+                            </div>
+                        </div>
+
+                        <div class="result-field">
+                            <label>Product Categories</label>
+                            <div class="taxonomy-grid" id="res-taxonomy"></div>
+                        </div>
+
+                        <div style="display: flex; gap: var(--space-3); margin-top: var(--space-6);">
+                            <button class="btn btn-primary btn-lg flex-1" id="confirm-btn" onclick="confirmStore()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                Confirm & Create Store
+                            </button>
+                            <button class="btn btn-secondary" onclick="regenerate()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                                Regenerate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Success State (hidden) -->
+                <div class="onboarding-card hidden" id="success-section">
+                    <div class="onboarding-card-body" style="padding: var(--space-12) var(--space-8); text-align: center;">
+                        <div id="success-checkmark-container"></div>
+                        <h3 style="font-size: var(--text-xl); margin-top: var(--space-6); margin-bottom: var(--space-2);">Store Created Successfully!</h3>
+                        <p style="font-size: var(--text-sm); color: var(--color-gray-500); margin-bottom: var(--space-8); max-width: 320px; margin-left: auto; margin-right: auto;">Your digital storefront is ready. Let's go to the dashboard and start adding products.</p>
+                        <a href="dashboard.html" class="btn btn-primary btn-lg">
+                            Go to Dashboard
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/store.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/animations.js"></script>
+    <script>
+        /* Auth guard */
+        if (!KalpaAuth.isAuthenticated()) {
+            window.location.href = 'login.html';
+        }
+
+        /* ============================================
+           FILE UPLOAD HANDLING
+           ============================================ */
+        const uploadZone = document.getElementById('upload-zone');
+        const fileInput = document.getElementById('signboard-input');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const previewContainer = document.getElementById('upload-preview');
+        const previewImg = document.getElementById('preview-img');
+
+        let selectedFile = null;
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) handleFileSelected(file);
+        });
+
+        /* Drag and drop */
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                handleFileSelected(file);
+            }
+        });
+
+        function handleFileSelected(file) {
+            selectedFile = file;
+            analyzeBtn.disabled = false;
+            uploadZone.classList.add('has-file');
+
+            /* Show preview */
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                previewContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        /* ============================================
+           AI ANALYSIS
+           ============================================ */
+        analyzeBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            /* Disable button */
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = '<div class="spinner spinner-sm spinner-white"></div> Analyzing...';
+
+            /* Show pipeline */
+            const pipelineContainer = document.getElementById('pipeline-container');
+            pipelineContainer.classList.remove('hidden');
+
+            /* Hide initial state */
+            document.getElementById('initial-state').classList.add('hidden');
+            document.getElementById('result-section').classList.add('hidden');
+
+            const pipelineSteps = [
+                { title: 'Uploading Image', description: 'Sending to Vision AI...' },
+                { title: 'Vision Analysis', description: 'Scanning storefront signage...' },
+                { title: 'OCR Processing', description: 'Extracting text from signboard...' },
+                { title: 'Business Understanding', description: 'Analyzing business context...' },
+                { title: 'Category Detection', description: 'Building product taxonomy...' },
+                { title: 'Merchant Profile', description: 'Generating store profile...' },
+            ];
+
+            const pipeline = KalpaAnimations.showAIPipeline(pipelineContainer, pipelineSteps);
+
+            /* Simulate initial steps while API processes */
+            let stepInterval = setInterval(() => {
+                if (pipeline.getCurrentStep() < 2) {
+                    pipeline.advance();
+                }
+            }, 800);
+
+            try {
+                /* Call existing API */
+                const formData = new FormData();
+                formData.append('images', selectedFile);
+
+                const response = await fetch('/api/setup-store', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                clearInterval(stepInterval);
+
+                if (!response.ok) {
+                    throw new Error('Server failed to process image');
+                }
+
+                const data = await response.json();
+
+                /* Complete remaining pipeline steps */
+                const remaining = 6 - pipeline.getCurrentStep();
+                for (let i = 0; i < remaining; i++) {
+                    await new Promise(r => setTimeout(r, 400));
+                    pipeline.advance();
+                }
+
+                /* Wait a beat then show results */
+                await new Promise(r => setTimeout(r, 500));
+
+                /* Populate form */
+                document.getElementById('res-shop-name').value = data.shopName || '';
+                document.getElementById('res-description').value = data.description || '';
+                document.getElementById('res-phone').value =
+                    (data.contactNumbers && data.contactNumbers.length > 0)
+                        ? data.contactNumbers.join(', ')
+                        : (data.contactNumber || '');
+                document.getElementById('res-address').value = data.address || '';
+
+                /* Render taxonomy */
+                const taxonomyContainer = document.getElementById('res-taxonomy');
+                taxonomyContainer.innerHTML = '';
+
+                if (data.taxonomy && data.taxonomy.length > 0) {
+                    data.taxonomy.forEach(cat => {
+                        const subs = cat.subCategories.map(s =>
+                            `<span class="taxonomy-sub">${s}</span>`
+                        ).join('');
+                        taxonomyContainer.innerHTML += `
+                            <div class="taxonomy-parent">
+                                <div class="taxonomy-parent-name">${cat.parentCategory}</div>
+                                <div class="taxonomy-subs">${subs}</div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    taxonomyContainer.innerHTML = '<p style="font-size: var(--text-sm); color: var(--color-gray-400);">No categories detected from signboard</p>';
+                }
+
+                /* Store raw AI data for later */
+                window._aiStoreData = data;
+
+                /* Show result section */
+                document.getElementById('result-section').classList.remove('hidden');
+
+                /* Also save to legacy localStorage keys for backward compat */
+                localStorage.setItem('kalpa_shopName', data.shopName || '');
+                localStorage.setItem('kalpa_taxonomy', JSON.stringify(data.taxonomy || []));
+
+                KalpaAnimations.showToast('Analysis Complete', 'Store details extracted successfully', 'success');
+
+            } catch (error) {
+                clearInterval(stepInterval);
+                pipeline.error();
+                KalpaAnimations.showToast('Analysis Failed', error.message || 'Please try again with a clearer image', 'error');
+
+                /* Reset button */
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                    Retry Analysis
+                `;
+            }
+        });
+
+        /* ============================================
+           CONFIRM STORE
+           ============================================ */
+        function confirmStore() {
+            const shopName = document.getElementById('res-shop-name').value.trim();
+            if (!shopName) {
+                KalpaAnimations.showToast('Missing Information', 'Store name is required', 'warning');
+                return;
+            }
+
+            const profile = {
+                shopName: shopName,
+                description: document.getElementById('res-description').value.trim(),
+                phone: document.getElementById('res-phone').value.trim(),
+                address: document.getElementById('res-address').value.trim(),
+                taxonomy: window._aiStoreData ? window._aiStoreData.taxonomy : [],
+                createdAt: new Date().toISOString(),
+            };
+
+            KalpaStore.setStoreProfile(profile);
+
+            /* Update step indicators */
+            document.getElementById('step-2').classList.remove('active');
+            document.getElementById('step-2').classList.add('completed');
+            document.getElementById('step-3').classList.add('active');
+
+            /* Hide result, show success */
+            document.getElementById('result-section').classList.add('hidden');
+            const successSection = document.getElementById('success-section');
+            successSection.classList.remove('hidden');
+
+            /* Insert success checkmark */
+            document.getElementById('success-checkmark-container').innerHTML = KalpaAnimations.getSuccessCheckmarkSVG();
+
+            /* Confetti! */
+            KalpaAnimations.showConfetti();
+        }
+
+        /* ============================================
+           REGENERATE
+           ============================================ */
+        function regenerate() {
+            /* Reset to upload state */
+            document.getElementById('result-section').classList.add('hidden');
+            document.getElementById('initial-state').classList.remove('hidden');
+            document.getElementById('pipeline-container').classList.add('hidden');
+            document.getElementById('pipeline-container').innerHTML = '';
+
+            selectedFile = null;
+            fileInput.value = '';
+            previewContainer.style.display = 'none';
+            uploadZone.classList.remove('has-file');
+
+            analyzeBtn.disabled = true;
+            analyzeBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                Analyze with AI
+            `;
+        }
+
+        /* ============================================
+           SKIP SETUP
+           ============================================ */
+        function skipSetup() {
+            window.location.href = 'dashboard.html';
+        }
+    </script>
+</body>
+</html>

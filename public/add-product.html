@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product | Kalpa AI</title>
+    <meta name="description" content="AI-powered product listing. Upload a product image and let AI create a complete catalog listing.">
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <style>
+        .add-product-grid {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: var(--space-6);
+            align-items: start;
+        }
+
+        .product-result-card {
+            animation: slide-up 0.4s ease forwards;
+        }
+
+        .specs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-3);
+        }
+
+        .spec-item {
+            background: var(--color-gray-50);
+            border: var(--border-width) solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: var(--space-3);
+        }
+
+        .spec-label {
+            font-size: var(--text-xs);
+            color: var(--color-gray-500);
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .spec-value {
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            color: var(--color-gray-800);
+        }
+
+        .agent-log {
+            background: var(--color-success-light);
+            border: var(--border-width) solid var(--color-success-border);
+            border-radius: var(--radius-md);
+            padding: var(--space-3) var(--space-4);
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            color: var(--color-success);
+            line-height: 1.5;
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-2);
+        }
+
+        .product-preview-img {
+            width: 100%;
+            max-height: 280px;
+            object-fit: contain;
+            border-radius: var(--radius-lg);
+            background: var(--color-gray-50);
+            border: var(--border-width) solid var(--border-color);
+        }
+
+        @media (max-width: 900px) {
+            .add-product-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <div class="app-main">
+            <div class="page-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="page-breadcrumb">
+                        <a href="products.html">Products</a>
+                        <span class="separator">/</span>
+                        <span>Add Product</span>
+                    </div>
+                    <div class="page-header-row">
+                        <div>
+                            <h1 class="page-title">Add New Product</h1>
+                            <p class="page-subtitle">Upload a product image and let AI create the listing</p>
+                        </div>
+                        <a href="products.html" class="btn btn-secondary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                            Back to Products
+                        </a>
+                    </div>
+                </div>
+
+                <div class="add-product-grid">
+                    <!-- Left: Upload Form -->
+                    <div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Product Images</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label class="form-label">Front Image <span class="required">*</span></label>
+                                    <div class="file-upload" id="front-upload-zone" onclick="document.getElementById('front-image-input').click()" style="padding: var(--space-6);">
+                                        <input type="file" id="front-image-input" accept="image/*" hidden>
+                                        <div class="file-upload-icon" style="width: 36px; height: 36px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                                        </div>
+                                        <div class="file-upload-text"><strong>Front image</strong> (required)</div>
+                                        <div class="file-upload-hint">Clear product photo</div>
+                                        <div class="file-upload-preview" id="front-preview" style="display:none;">
+                                            <img id="front-preview-img" src="" alt="Front">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Back Image (Optional)</label>
+                                    <div class="file-upload" id="back-upload-zone" onclick="document.getElementById('back-image-input').click()" style="padding: var(--space-4);">
+                                        <input type="file" id="back-image-input" accept="image/*" hidden>
+                                        <div class="file-upload-text" style="font-size: var(--text-sm);">Click to add back image</div>
+                                        <div class="file-upload-preview" id="back-preview" style="display:none;">
+                                            <img id="back-preview-img" src="" alt="Back" style="max-height: 100px;">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Selling Price (₹) <span class="required">*</span></label>
+                                    <div class="form-input-icon">
+                                        <span class="icon" style="font-weight: var(--font-bold); color: var(--color-gray-500);">₹</span>
+                                        <input type="number" class="form-input" id="selling-price-input" placeholder="e.g. 1200" min="1" style="padding-left: 32px;">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Stock Quantity</label>
+                                    <input type="number" class="form-input" id="stock-input" placeholder="e.g. 25" min="0" value="25">
+                                </div>
+
+                                <button class="btn btn-primary btn-block btn-lg" id="generate-btn" onclick="generateListing()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                                    Generate AI Listing
+                                </button>
+
+                                <!-- AI Pipeline -->
+                                <div id="pipeline-container" class="mt-4 hidden"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: AI Result -->
+                    <div>
+                        <!-- Empty State -->
+                        <div class="card" id="empty-state">
+                            <div class="card-body" style="padding: var(--space-16) var(--space-8);">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/></svg>
+                                    </div>
+                                    <h3>Product listing will appear here</h3>
+                                    <p>Upload a product image and selling price, then click Generate AI Listing to create a complete catalog entry.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Result Card (hidden) -->
+                        <div class="card product-result-card hidden" id="result-card">
+                            <div class="card-header">
+                                <div style="display: flex; align-items: center; gap: var(--space-3);">
+                                    <h4>AI-Generated Listing</h4>
+                                    <span class="confidence-badge high" id="res-confidence"><span class="confidence-dot"></span> 95%</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <!-- Image Preview -->
+                                <div style="margin-bottom: var(--space-5);">
+                                    <img id="result-product-img" class="product-preview-img" src="" alt="Product">
+                                </div>
+
+                                <!-- Product Name -->
+                                <div class="form-group">
+                                    <label class="form-label">Product Name</label>
+                                    <input type="text" class="form-input" id="res-product-name" placeholder="Product name">
+                                </div>
+
+                                <!-- Category -->
+                                <div style="margin-bottom: var(--space-4);">
+                                    <span class="badge badge-primary badge-lg" id="res-category">Category</span>
+                                </div>
+
+                                <!-- Pricing -->
+                                <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-5);">
+                                    <span class="price-selling" id="res-selling-price">₹0</span>
+                                    <span class="price-mrp" id="res-mrp">MRP ₹0</span>
+                                    <span class="price-discount" id="res-discount">0% OFF</span>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="form-group">
+                                    <label class="form-label">Description</label>
+                                    <textarea class="form-textarea" id="res-description" rows="3"></textarea>
+                                </div>
+
+                                <!-- Specifications -->
+                                <div class="form-group">
+                                    <label class="form-label">Specifications</label>
+                                    <div class="specs-grid" id="res-specs"></div>
+                                </div>
+
+                                <!-- Agent Log -->
+                                <div class="agent-log">
+                                    <span>🤖</span>
+                                    <span id="res-reasoning">Agent reasoning will appear here</span>
+                                </div>
+                            </div>
+                            <div class="card-footer" style="display: flex; gap: var(--space-3);">
+                                <button class="btn btn-primary flex-1" onclick="publishProduct()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                    Publish
+                                </button>
+                                <button class="btn btn-secondary" onclick="saveDraft()">Save Draft</button>
+                                <button class="btn btn-ghost" onclick="regenerateProduct()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                                    Regenerate
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/store.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/layout.js"></script>
+    <script src="js/animations.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            KalpaLayout.init();
+        });
+
+        /* ============================================
+           FILE INPUT HANDLERS
+           ============================================ */
+        let frontFile = null;
+        let backFile = null;
+
+        document.getElementById('front-image-input').addEventListener('change', (e) => {
+            frontFile = e.target.files[0];
+            if (frontFile) {
+                showFilePreview(frontFile, 'front-preview', 'front-preview-img');
+                document.getElementById('front-upload-zone').classList.add('has-file');
+            }
+        });
+
+        document.getElementById('back-image-input').addEventListener('change', (e) => {
+            backFile = e.target.files[0];
+            if (backFile) {
+                showFilePreview(backFile, 'back-preview', 'back-preview-img');
+                document.getElementById('back-upload-zone').classList.add('has-file');
+            }
+        });
+
+        /* Drag and drop for front image */
+        const frontZone = document.getElementById('front-upload-zone');
+        frontZone.addEventListener('dragover', (e) => { e.preventDefault(); frontZone.classList.add('dragover'); });
+        frontZone.addEventListener('dragleave', () => frontZone.classList.remove('dragover'));
+        frontZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            frontZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                frontFile = file;
+                showFilePreview(file, 'front-preview', 'front-preview-img');
+                frontZone.classList.add('has-file');
+            }
+        });
+
+        function showFilePreview(file, containerId, imgId) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById(imgId).src = e.target.result;
+                document.getElementById(containerId).style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        /* ============================================
+           GENERATE LISTING
+           ============================================ */
+        let lastAIData = null;
+        let frontImageDataUrl = null;
+
+        async function generateListing() {
+            const price = document.getElementById('selling-price-input').value;
+
+            if (!frontFile || !price) {
+                KalpaAnimations.showToast('Missing Fields', 'Front image and selling price are required', 'warning');
+                return;
+            }
+
+            const generateBtn = document.getElementById('generate-btn');
+            KalpaAnimations.setButtonLoading(generateBtn, true);
+
+            /* Store front image for preview */
+            const imgReader = new FileReader();
+            imgReader.onload = (e) => { frontImageDataUrl = e.target.result; };
+            imgReader.readAsDataURL(frontFile);
+
+            /* Show pipeline, hide results */
+            const pipelineContainer = document.getElementById('pipeline-container');
+            pipelineContainer.classList.remove('hidden');
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('result-card').classList.add('hidden');
+
+            const pipelineSteps = [
+                { title: 'Vision Agent', description: 'Analyzing product images...' },
+                { title: 'Research Agent', description: 'Searching market data & pricing...' },
+                { title: 'Critic Agent', description: 'Validating listing quality...' },
+                { title: 'Confidence Scoring', description: 'Computing final confidence...' },
+            ];
+
+            const pipeline = KalpaAnimations.showAIPipeline(pipelineContainer, pipelineSteps);
+
+            /* Advance first step quickly */
+            setTimeout(() => pipeline.advance(), 1200);
+
+            try {
+                const formData = new FormData();
+                formData.append('frontImage', frontFile);
+                if (backFile) formData.append('backImage', backFile);
+                formData.append('sellingPrice', price);
+
+                const response = await fetch('/api/analyze-product', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) throw new Error('Server failed to process product');
+                const data = await response.json();
+
+                /* Complete pipeline */
+                const remaining = 4 - pipeline.getCurrentStep();
+                for (let i = 0; i < remaining; i++) {
+                    await new Promise(r => setTimeout(r, 350));
+                    pipeline.advance();
+                }
+
+                await new Promise(r => setTimeout(r, 400));
+
+                lastAIData = data;
+                displayResult(data);
+
+                KalpaAnimations.showToast('Listing Generated', 'Review the details and publish when ready', 'success');
+
+            } catch (error) {
+                pipeline.error();
+                KalpaAnimations.showToast('Generation Failed', error.message || 'Please try again', 'error');
+                document.getElementById('empty-state').classList.remove('hidden');
+            }
+
+            KalpaAnimations.setButtonLoading(generateBtn, false, `
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                Generate AI Listing
+            `);
+        }
+
+        /* ============================================
+           DISPLAY RESULT
+           ============================================ */
+        function displayResult(data) {
+            document.getElementById('result-card').classList.remove('hidden');
+            document.getElementById('empty-state').classList.add('hidden');
+
+            /* Product image */
+            if (frontImageDataUrl) {
+                document.getElementById('result-product-img').src = frontImageDataUrl;
+            }
+
+            /* Name & Category */
+            document.getElementById('res-product-name').value = data.productName || '';
+            document.getElementById('res-category').textContent = data.category || 'Uncategorized';
+
+            /* Pricing */
+            const sp = data.pricing?.sellingPrice || 0;
+            const mrp = data.pricing?.mrp || 0;
+            const disc = data.pricing?.discountPercentage || 0;
+            document.getElementById('res-selling-price').textContent = '₹' + Number(sp).toLocaleString('en-IN');
+            document.getElementById('res-mrp').textContent = 'MRP ₹' + Number(mrp).toLocaleString('en-IN');
+
+            const discEl = document.getElementById('res-discount');
+            if (disc > 0) {
+                discEl.textContent = disc + '% OFF';
+                discEl.style.display = 'inline-block';
+            } else {
+                discEl.style.display = 'none';
+            }
+
+            /* Description */
+            document.getElementById('res-description').value = data.description || '';
+
+            /* Confidence */
+            const sources = data.pricing?.mrp_sources_found || 0;
+            const confScore = sources >= 3 ? 0.95 : sources >= 2 ? 0.85 : 0.7;
+            const confPct = Math.round(confScore * 100);
+            const confEl = document.getElementById('res-confidence');
+            confEl.className = `confidence-badge ${confScore >= 0.8 ? 'high' : confScore >= 0.6 ? 'medium' : 'low'}`;
+            confEl.innerHTML = `<span class="confidence-dot"></span> ${confPct}%`;
+
+            /* Specifications */
+            const specsGrid = document.getElementById('res-specs');
+            specsGrid.innerHTML = '';
+            if (data.specifications) {
+                for (const [key, value] of Object.entries(data.specifications)) {
+                    specsGrid.innerHTML += `
+                        <div class="spec-item">
+                            <span class="spec-label">${key}</span>
+                            <span class="spec-value">${value}</span>
+                        </div>
+                    `;
+                }
+            }
+
+            /* Agent reasoning */
+            document.getElementById('res-reasoning').textContent = data.reasoning_summary || 'AI analysis complete.';
+
+            /* Store confidence for saving */
+            lastAIData._confidence = confScore;
+        }
+
+        /* ============================================
+           PUBLISH / SAVE DRAFT
+           ============================================ */
+        function saveProduct(status) {
+            if (!lastAIData) return;
+
+            const product = {
+                name: document.getElementById('res-product-name').value.trim() || lastAIData.productName,
+                category: lastAIData.category || 'Uncategorized',
+                mrp: Number(lastAIData.pricing?.mrp) || 0,
+                sellingPrice: Number(lastAIData.pricing?.sellingPrice) || 0,
+                discount: Number(lastAIData.pricing?.discountPercentage) || 0,
+                description: document.getElementById('res-description').value.trim() || lastAIData.description,
+                specifications: lastAIData.specifications || {},
+                stock: parseInt(document.getElementById('stock-input').value) || 0,
+                confidence: lastAIData._confidence || 0.85,
+                reasoning: lastAIData.reasoning_summary || '',
+                status: status,
+            };
+
+            KalpaStore.addProduct(product);
+
+            if (status === 'active') {
+                KalpaAnimations.showToast('Product Published', `${product.name} has been added to your catalog`, 'success');
+                KalpaAnimations.showConfetti();
+            } else {
+                KalpaAnimations.showToast('Draft Saved', `${product.name} saved as draft`, 'info');
+            }
+
+            /* Reset form after a delay */
+            setTimeout(() => {
+                resetForm();
+            }, 1500);
+        }
+
+        function publishProduct() {
+            saveProduct('active');
+        }
+
+        function saveDraft() {
+            saveProduct('draft');
+        }
+
+        /* ============================================
+           REGENERATE
+           ============================================ */
+        function regenerateProduct() {
+            document.getElementById('result-card').classList.add('hidden');
+            document.getElementById('empty-state').classList.remove('hidden');
+            document.getElementById('pipeline-container').classList.add('hidden');
+            document.getElementById('pipeline-container').innerHTML = '';
+            lastAIData = null;
+        }
+
+        /* ============================================
+           RESET
+           ============================================ */
+        function resetForm() {
+            document.getElementById('result-card').classList.add('hidden');
+            document.getElementById('empty-state').classList.remove('hidden');
+            document.getElementById('pipeline-container').classList.add('hidden');
+            document.getElementById('pipeline-container').innerHTML = '';
+
+            frontFile = null;
+            backFile = null;
+            lastAIData = null;
+            frontImageDataUrl = null;
+
+            document.getElementById('front-image-input').value = '';
+            document.getElementById('back-image-input').value = '';
+            document.getElementById('selling-price-input').value = '';
+            document.getElementById('stock-input').value = '25';
+
+            document.getElementById('front-preview').style.display = 'none';
+            document.getElementById('back-preview').style.display = 'none';
+            document.getElementById('front-upload-zone').classList.remove('has-file');
+            document.getElementById('back-upload-zone').classList.remove('has-file');
+        }
+    </script>
+</body>
+</html>

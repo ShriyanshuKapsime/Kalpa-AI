@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management - Kalpa AI</title>
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <div class="app-layout">
+        <div class="app-main">
+            <div class="page-content">
+                <div class="page-header">
+                    <div class="page-title-group">
+                        <h1 class="page-title">Inventory</h1>
+                        <p class="page-subtitle">Monitor stock levels and manage inventory</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid stats-grid-5 stagger-children" id="inventory-stats">
+                    <!-- Stats will be populated here -->
+                </div>
+
+                <div class="card" style="margin-bottom: var(--spacing-xl);">
+                    <div class="card-header">
+                        <h2 class="card-title">AI Stock Alerts</h2>
+                    </div>
+                    <div class="card-body" id="ai-alerts-container">
+                        <!-- Alerts will be populated here -->
+                    </div>
+                </div>
+
+                <div class="card table-container">
+                    <div class="table-toolbar">
+                        <div class="search-box">
+                            <i data-lucide="search"></i>
+                            <input type="text" id="inventory-search" class="form-input" placeholder="Search products or SKUs...">
+                        </div>
+                        <div class="filter-group">
+                            <select id="status-filter" class="form-select">
+                                <option value="all">All Status</option>
+                                <option value="in_stock">In Stock</option>
+                                <option value="low_stock">Low Stock</option>
+                                <option value="out_of_stock">Out of Stock</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table" id="inventory-table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>SKU</th>
+                                    <th>Category</th>
+                                    <th>Current Stock</th>
+                                    <th>Status</th>
+                                    <th>Price</th>
+                                    <th>Last Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-tbody">
+                                <!-- Table rows will go here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="pagination-container" class="pagination-container">
+                        <!-- Pagination will go here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/store.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/layout.js"></script>
+    <script src="js/animations.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            KalpaLayout.init();
+            
+            const products = KalpaStore.getProducts();
+            
+            // Calculate stats
+            const totalProducts = products.length;
+            const lowStock = products.filter(p => p.stock <= 10 && p.stock > 0).length;
+            const outOfStock = products.filter(p => p.stock === 0).length;
+            const categories = new Set(products.map(p => p.category)).size;
+            const inventoryValue = products.reduce((sum, p) => sum + (p.sellingPrice * p.stock), 0);
+
+            // Render stats
+            const statsContainer = document.getElementById('inventory-stats');
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Total Products</span>
+                        <div class="stat-icon" style="background: var(--bg-blue); color: var(--primary);">${KalpaLayout.icons.box || '<svg></svg>'}</div>
+                    </div>
+                    <div class="stat-value" data-count="${totalProducts}">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Low Stock</span>
+                        <div class="stat-icon" style="background: var(--bg-warning); color: var(--warning);">${KalpaLayout.icons.alertTriangle || '<svg></svg>'}</div>
+                    </div>
+                    <div class="stat-value" data-count="${lowStock}">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Out of Stock</span>
+                        <div class="stat-icon" style="background: var(--bg-danger); color: var(--danger);">${KalpaLayout.icons.alertCircle || '<svg></svg>'}</div>
+                    </div>
+                    <div class="stat-value" data-count="${outOfStock}">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Categories</span>
+                        <div class="stat-icon" style="background: var(--bg-gray); color: var(--text-secondary);">${KalpaLayout.icons.grid || '<svg></svg>'}</div>
+                    </div>
+                    <div class="stat-value" data-count="${categories}">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">Inventory Value</span>
+                        <div class="stat-icon" style="background: var(--bg-success); color: var(--success);">${KalpaLayout.icons.dollarSign || '<svg></svg>'}</div>
+                    </div>
+                    <div class="stat-value" data-count="${inventoryValue}">0</div>
+                </div>
+            `;
+
+            // Run animations
+            document.querySelectorAll('.stat-value[data-count]').forEach(el => {
+                KalpaAnimations.animateCounter(el, parseInt(el.getAttribute('data-count'), 10), el.getAttribute('data-count').includes('.') || el.getAttribute('data-count') > 1000 ? { prefix: inventoryValue === parseFloat(el.getAttribute('data-count')) ? '$' : '' } : {});
+                if(parseFloat(el.getAttribute('data-count')) === inventoryValue) {
+                   el.innerHTML = KalpaLayout.formatCurrency(inventoryValue); 
+                }
+            });
+
+            // AI Alerts
+            const alertsContainer = document.getElementById('ai-alerts-container');
+            const alertProducts = products.filter(p => p.stock <= 10);
+            
+            if (alertProducts.length === 0) {
+                alertsContainer.innerHTML = `
+                    <div class="empty-state" style="padding: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm); color: var(--success);">
+                        ${KalpaLayout.icons.checkCircle || ''}
+                        <span>All stock levels healthy</span>
+                    </div>
+                `;
+            } else {
+                let alertsHtml = '<div class="alerts-list" style="display: flex; flex-direction: column; gap: var(--spacing-sm);">';
+                alertProducts.forEach(p => {
+                    const isOut = p.stock === 0;
+                    const iconColor = isOut ? 'var(--danger)' : 'var(--warning)';
+                    const iconBg = isOut ? 'var(--bg-danger)' : 'var(--bg-warning)';
+                    const icon = isOut ? KalpaLayout.icons.alertCircle : KalpaLayout.icons.alertTriangle;
+                    
+                    alertsHtml += `
+                        <div class="alert-item" style="display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+                            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+                                <div class="alert-icon" style="background: ${iconBg}; color: ${iconColor}; padding: var(--spacing-sm); border-radius: var(--radius-full);">
+                                    ${icon || ''}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 500; color: var(--text-primary);">${p.title}</div>
+                                    <div style="font-size: var(--text-sm); color: var(--text-secondary);">Current Stock: ${p.stock}</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary btn-sm">Restock</button>
+                        </div>
+                    `;
+                });
+                alertsHtml += '</div>';
+                alertsContainer.innerHTML = alertsHtml;
+            }
+
+            // Table state
+            let currentPage = 1;
+            const itemsPerPage = 10;
+            let filteredProducts = [...products];
+
+            const tbody = document.getElementById('inventory-tbody');
+            const searchInput = document.getElementById('inventory-search');
+            const statusFilter = document.getElementById('status-filter');
+            const paginationContainer = document.getElementById('pagination-container');
+
+            function renderTable() {
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const paginatedProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
+                
+                tbody.innerHTML = '';
+                
+                if (paginatedProducts.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: var(--spacing-xl); color: var(--text-secondary);">
+                                No products found matching your filters.
+                            </td>
+                        </tr>
+                    `;
+                    paginationContainer.innerHTML = '';
+                    return;
+                }
+
+                paginatedProducts.forEach(p => {
+                    const status = KalpaLayout.stockStatus(p.stock);
+                    const initial = p.title.charAt(0).toUpperCase();
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>
+                            <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                                <div class="avatar" style="width: 32px; height: 32px; border-radius: var(--radius-full); background: var(--bg-blue); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 600;">
+                                    ${initial}
+                                </div>
+                                <span style="font-weight: 500;">${p.title}</span>
+                            </div>
+                        </td>
+                        <td style="font-family: monospace; color: var(--text-secondary);">${p.sku || p.id}</td>
+                        <td>${p.category}</td>
+                        <td style="font-weight: 500;">${p.stock}</td>
+                        <td>${KalpaLayout.statusBadge(status)}</td>
+                        <td>${KalpaLayout.formatCurrency(p.sellingPrice)}</td>
+                        <td style="color: var(--text-secondary);">${KalpaLayout.formatDate(p.createdAt || new Date().toISOString())}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+                if (totalPages > 1) {
+                    paginationContainer.innerHTML = KalpaLayout.renderPagination(currentPage, totalPages);
+                    
+                    // Add pagination event listeners
+                    paginationContainer.querySelectorAll('.pagination-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            if (btn.disabled || btn.classList.contains('active')) return;
+                            const page = btn.getAttribute('data-page');
+                            if (page === 'prev') currentPage--;
+                            else if (page === 'next') currentPage++;
+                            else currentPage = parseInt(page, 10);
+                            renderTable();
+                        });
+                    });
+                } else {
+                    paginationContainer.innerHTML = '';
+                }
+            }
+
+            function applyFilters() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const statusValue = statusFilter.value;
+
+                filteredProducts = products.filter(p => {
+                    const matchesSearch = p.title.toLowerCase().includes(searchTerm) || (p.sku || p.id).toLowerCase().includes(searchTerm);
+                    let matchesStatus = true;
+                    
+                    const status = KalpaLayout.stockStatus(p.stock);
+                    if (statusValue === 'in_stock') matchesStatus = status === 'in_stock';
+                    else if (statusValue === 'low_stock') matchesStatus = status === 'low_stock';
+                    else if (statusValue === 'out_of_stock') matchesStatus = status === 'out_of_stock';
+
+                    return matchesSearch && matchesStatus;
+                });
+
+                currentPage = 1;
+                renderTable();
+            }
+
+            searchInput.addEventListener('input', applyFilters);
+            statusFilter.addEventListener('change', applyFilters);
+
+            renderTable();
+        });
+    </script>
+</body>
+</html>

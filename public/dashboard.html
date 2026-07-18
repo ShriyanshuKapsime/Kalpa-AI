@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Kalpa AI</title>
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <style>
+        .stats-grid { display: grid; gap: var(--spacing-4); margin-bottom: var(--spacing-6); }
+        .stats-grid-6 { grid-template-columns: repeat(6, 1fr); }
+        
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-6); margin-bottom: var(--spacing-6); }
+        .chart-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: var(--spacing-4); }
+        .chart-card-header { font-weight: 600; margin-bottom: var(--spacing-4); color: var(--text-primary); font-size: 16px; }
+        .chart-card-body { position: relative; height: 280px; width: 100%; }
+        
+        .dashboard-columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-6); }
+        
+        .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-4); }
+        .quick-action-btn { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--spacing-4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-2); text-decoration: none; color: var(--text-primary); transition: all 0.2s; }
+        .quick-action-btn:hover { border-color: var(--primary-color); color: var(--primary-color); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+        .quick-action-icon { font-size: 24px; }
+        .quick-action-label { font-size: 14px; font-weight: 500; }
+        
+        .top-products-list { display: flex; flex-direction: column; gap: var(--spacing-3); }
+        .top-product-item { display: flex; justify-content: space-between; align-items: center; padding: var(--spacing-3); border-bottom: 1px solid var(--border-color); }
+        .top-product-item:last-child { border-bottom: none; }
+        .top-product-info { display: flex; flex-direction: column; }
+        .top-product-name { font-weight: 500; color: var(--text-primary); }
+        .top-product-sales { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+        .top-product-revenue { font-weight: 600; color: var(--text-primary); }
+        
+        .stat-card-trend { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 4px; margin-top: 8px; }
+        .trend-up { color: var(--success-color, #10B981); }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <div class="app-main">
+            <div class="page-content">
+                
+                <!-- Page Header -->
+                <div class="page-header" style="margin-bottom: var(--spacing-6);">
+                    <div class="page-title-group">
+                        <h1 class="page-title">Dashboard</h1>
+                        <p class="page-subtitle" id="merchant-welcome">Welcome back, Merchant</p>
+                    </div>
+                </div>
+
+                <!-- 1. Stats Grid -->
+                <div class="stats-grid stats-grid-6 stagger-children" id="stats-container">
+                    <!-- Cards will be populated by JS -->
+                </div>
+
+                <!-- 2. Charts Grid -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-card-header">Revenue Trend</div>
+                        <div class="chart-card-body">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-card-header">Sales by Category</div>
+                        <div class="chart-card-body">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Three-column grid -->
+                <div class="dashboard-columns">
+                    <!-- Recent Orders -->
+                    <div class="card">
+                        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-4);">
+                            <h3 style="font-size: 16px; font-weight: 600;">Recent Orders</h3>
+                            <a href="orders.html" style="font-size: 14px; color: var(--primary-color); text-decoration: none; font-weight: 500;">View all</a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-orders-table">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Top Products -->
+                    <div class="card">
+                        <div class="card-header" style="margin-bottom: var(--spacing-4);">
+                            <h3 style="font-size: 16px; font-weight: 600;">Top Products</h3>
+                        </div>
+                        <div class="top-products-list" id="top-products-list">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card">
+                        <div class="card-header" style="margin-bottom: var(--spacing-4);">
+                            <h3 style="font-size: 16px; font-weight: 600;">Quick Actions</h3>
+                        </div>
+                        <div class="quick-actions">
+                            <a href="add-product.html" class="quick-action-btn">
+                                <span class="quick-action-icon">➕</span>
+                                <span class="quick-action-label">Add Product</span>
+                            </a>
+                            <a href="inventory.html" class="quick-action-btn">
+                                <span class="quick-action-icon">📦</span>
+                                <span class="quick-action-label">View Inventory</span>
+                            </a>
+                            <a href="orders.html" class="quick-action-btn">
+                                <span class="quick-action-icon">🛒</span>
+                                <span class="quick-action-label">Check Orders</span>
+                            </a>
+                            <a href="ai-copilot.html" class="quick-action-btn">
+                                <span class="quick-action-icon">✨</span>
+                                <span class="quick-action-label">AI Copilot</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/store.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/layout.js"></script>
+    <script src="js/animations.js"></script>
+    <script src="js/charts.js"></script>
+
+    <!-- Page Initialization -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Init Layout
+            if (window.KalpaLayout) {
+                KalpaLayout.init();
+            }
+
+            // 2. Auth & Welcome
+            const currentUser = window.KalpaStore ? KalpaStore.getCurrentUser() : { name: 'Merchant' };
+            if (currentUser) {
+                document.getElementById('merchant-welcome').textContent = `Welcome back, ${currentUser.name}`;
+            }
+
+            // 3. Stats Grid population
+            const stats = window.KalpaStore ? KalpaStore.getStats() : {
+                revenue: 0, orders: 0, products: 0, lowStock: 0, storeHealth: 0, avgConfidence: 0
+            };
+            
+            const statsData = [
+                { label: 'Revenue', value: stats.revenue, prefix: '₹', suffix: '', icon: (window.KalpaLayout && KalpaLayout.icons) ? KalpaLayout.icons.revenue : '💰', color: '#2563EB', trend: '+12.5%' },
+                { label: 'Orders', value: stats.orders, prefix: '', suffix: '', icon: (window.KalpaLayout && KalpaLayout.icons) ? KalpaLayout.icons.orders : '🛒', color: '#10B981', trend: '+8.2%' },
+                { label: 'Products', value: stats.products, prefix: '', suffix: '', icon: (window.KalpaLayout && KalpaLayout.icons) ? KalpaLayout.icons.products : '📦', color: '#8B5CF6', trend: null },
+                { label: 'Low Stock', value: stats.lowStock, prefix: '', suffix: '', icon: (window.KalpaLayout && KalpaLayout.icons) ? KalpaLayout.icons.warning : '⚠️', color: '#F59E0B', trend: null },
+                { label: 'Store Health', value: stats.storeHealth, prefix: '', suffix: '%', icon: (window.KalpaLayout && KalpaLayout.icons) ? KalpaLayout.icons.health : '❤️', color: '#06B6D4', trend: null },
+                { label: 'AI Confidence', value: stats.avgConfidence, prefix: '', suffix: '%', icon: (window.KalpaLayout && KalpaLayout.icons) ? KalpaLayout.icons.ai : '✨', color: '#3B82F6', trend: null }
+            ];
+
+            const statsContainer = document.getElementById('stats-container');
+            statsData.forEach(stat => {
+                const card = document.createElement('div');
+                card.className = 'stat-card card';
+                
+                let trendHtml = stat.trend ? `<div class="stat-card-trend trend-up"><span>↑</span> ${stat.trend}</div>` : '';
+                
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 12px;">
+                        <div class="stat-card-label" style="color: var(--text-secondary); font-size: 14px; font-weight: 500;">${stat.label}</div>
+                        <div class="stat-card-icon" style="color: ${stat.color}; font-size: 20px;">${stat.icon}</div>
+                    </div>
+                    <div>
+                        <div class="stat-card-value" style="font-size: 24px; font-weight: 700; color: var(--text-primary);" 
+                             data-value="${stat.value}" 
+                             data-prefix="${stat.prefix}" 
+                             data-suffix="${stat.suffix}">
+                            ${stat.prefix}0${stat.suffix}
+                        </div>
+                        ${trendHtml}
+                    </div>
+                `;
+                statsContainer.appendChild(card);
+            });
+
+            // Animate stats
+            if (window.KalpaAnimations && KalpaAnimations.animateCounter) {
+                document.querySelectorAll('.stat-card-value').forEach(el => {
+                    const target = parseFloat(el.getAttribute('data-value')) || 0;
+                    const prefix = el.getAttribute('data-prefix');
+                    const suffix = el.getAttribute('data-suffix');
+                    KalpaAnimations.animateCounter(el, target, { prefix, suffix, duration: 1500 });
+                });
+            }
+
+            // 4. Init Charts
+            if (window.KalpaCharts && window.KalpaStore) {
+                const revenueData = KalpaStore.getRevenueByDay ? KalpaStore.getRevenueByDay() : null;
+                const categoryData = KalpaStore.getSalesByCategory ? KalpaStore.getSalesByCategory() : null;
+                
+                if (revenueData && KalpaCharts.createLineChart) {
+                    KalpaCharts.createLineChart(document.getElementById('revenueChart'), revenueData);
+                }
+                
+                if (categoryData && KalpaCharts.createDoughnutChart) {
+                    KalpaCharts.createDoughnutChart(document.getElementById('categoryChart'), categoryData);
+                }
+            }
+
+            // 5. Recent Orders
+            const recentOrdersTable = document.getElementById('recent-orders-table');
+            const orders = window.KalpaStore && KalpaStore.getOrders ? KalpaStore.getOrders() : [];
+            const recentOrders = orders.slice(0, 5);
+            
+            if (recentOrders.length > 0) {
+                recentOrders.forEach(order => {
+                    const tr = document.createElement('tr');
+                    
+                    const amount = window.KalpaLayout && KalpaLayout.formatCurrency ? 
+                        KalpaLayout.formatCurrency(order.total) : `₹${order.total}`;
+                        
+                    const statusBadge = window.KalpaLayout && KalpaLayout.statusBadge ? 
+                        KalpaLayout.statusBadge(order.status) : `<span class="badge">${order.status}</span>`;
+                        
+                    tr.innerHTML = `
+                        <td style="font-weight: 500; color: var(--text-primary);">${order.id}</td>
+                        <td style="color: var(--text-secondary);">${order.customer}</td>
+                        <td style="font-weight: 500;">${amount}</td>
+                        <td>${statusBadge}</td>
+                    `;
+                    recentOrdersTable.appendChild(tr);
+                });
+            } else {
+                recentOrdersTable.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-secondary); padding: var(--spacing-4);">No recent orders</td></tr>`;
+            }
+
+            // 6. Top Products
+            const topProductsList = document.getElementById('top-products-list');
+            const topProducts = window.KalpaStore && KalpaStore.getTopProducts ? KalpaStore.getTopProducts() : [];
+            
+            if (topProducts.length > 0) {
+                topProducts.slice(0, 5).forEach(product => {
+                    const item = document.createElement('div');
+                    item.className = 'top-product-item';
+                    
+                    const revenue = window.KalpaLayout && KalpaLayout.formatCurrency ? 
+                        KalpaLayout.formatCurrency(product.revenue) : `₹${product.revenue}`;
+                        
+                    item.innerHTML = `
+                        <div class="top-product-info">
+                            <span class="top-product-name">${product.name}</span>
+                            <span class="top-product-sales">${product.soldCount} units sold</span>
+                        </div>
+                        <div class="top-product-revenue">${revenue}</div>
+                    `;
+                    topProductsList.appendChild(item);
+                });
+            } else {
+                topProductsList.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: var(--spacing-4);">No products found</div>`;
+            }
+        });
+    </script>
+</body>
+</html>

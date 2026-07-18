@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Kalpa AI</title>
+    <!-- CSS files -->
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <div class="app-layout">
+        <div class="app-main">
+            <div class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Settings</h1>
+                    <p class="page-subtitle" style="color: #64748B; margin-top: 0.5rem;">Manage your account and store preferences</p>
+                </div>
+
+                <div class="tabs" id="settings-tabs">
+                    <button class="tab active" data-target="profile-tab">Profile</button>
+                    <button class="tab" data-target="business-tab">Business</button>
+                    <button class="tab" data-target="store-tab">Store</button>
+                </div>
+
+                <!-- Profile Tab -->
+                <div id="profile-tab" class="tab-content" style="display: block;">
+                    <div class="card">
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                            <div style="width: 64px; height: 64px; border-radius: 50%; background: #2563EB; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 600;" id="avatar-initial">U</div>
+                            <div>
+                                <button class="btn btn-secondary btn-sm" type="button">Change Avatar</button>
+                            </div>
+                        </div>
+                        <form id="profile-form">
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label class="form-label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Merchant Name</label>
+                                <input type="text" id="merchant-name" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid #CBD5E1; border-radius: 4px;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label class="form-label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Email</label>
+                                <input type="email" id="merchant-email" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid #CBD5E1; border-radius: 4px; background: #F1F5F9; color: #64748B;" disabled readonly>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 1.5rem;">
+                                <label class="form-label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Phone</label>
+                                <input type="text" id="merchant-phone" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid #CBD5E1; border-radius: 4px;">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Profile</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Business Tab -->
+                <div id="business-tab" class="tab-content" style="display: none;">
+                    <div class="card">
+                        <form id="business-form">
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label class="form-label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Business Name</label>
+                                <input type="text" id="business-name" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid #CBD5E1; border-radius: 4px;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label class="form-label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Business Category</label>
+                                <select id="business-category" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid #CBD5E1; border-radius: 4px;">
+                                    <option value="retail">Retail</option>
+                                    <option value="electronics">Electronics</option>
+                                    <option value="clothing">Clothing & Apparel</option>
+                                    <option value="grocery">Grocery</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 1.5rem;">
+                                <label class="form-label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Business Address</label>
+                                <textarea id="business-address" class="form-input" rows="3" style="width: 100%; padding: 0.5rem; border: 1px solid #CBD5E1; border-radius: 4px;"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Business Details</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Store Tab -->
+                <div id="store-tab" class="tab-content" style="display: none;">
+                    <div class="card">
+                        <form id="store-form">
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label class="form-label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Store Name</label>
+                                <input type="text" id="store-name" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid #CBD5E1; border-radius: 4px;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label class="form-label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Store Description</label>
+                                <textarea id="store-desc" class="form-input" rows="2" style="width: 100%; padding: 0.5rem; border: 1px solid #CBD5E1; border-radius: 4px;"></textarea>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 1.5rem;">
+                                <label class="form-label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Contact Number</label>
+                                <input type="text" id="store-phone" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid #CBD5E1; border-radius: 4px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 1.5rem;">
+                                <label class="form-label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Business Hours</label>
+                                <div style="display: grid; gap: 0.5rem;">
+                                    <!-- Mon-Sun -->
+                                    <script>
+                                        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                                        days.forEach(day => {
+                                            document.write(`
+                                                <div style="display: grid; grid-template-columns: 100px 1fr 1fr; gap: 1rem; align-items: center;">
+                                                    <span style="font-size: 0.875rem; font-weight: 500;">${day}</span>
+                                                    <input type="time" class="form-input" value="09:00" style="padding: 0.5rem; border: 1px solid #CBD5E1; border-radius: 4px;">
+                                                    <input type="time" class="form-input" value="20:00" style="padding: 0.5rem; border: 1px solid #CBD5E1; border-radius: 4px;">
+                                                </div>
+                                            `);
+                                        });
+                                    </script>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Save Store Settings</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- JS files -->
+    <script src="js/store.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/layout.js"></script>
+    <script src="js/animations.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            KalpaLayout.init();
+
+            // Tab Switching functionality
+            const tabs = document.querySelectorAll('#settings-tabs .tab');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Reset all
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.style.display = 'none');
+                    
+                    // Activate clicked
+                    tab.classList.add('active');
+                    const targetId = tab.getAttribute('data-target');
+                    document.getElementById(targetId).style.display = 'block';
+                });
+            });
+
+            // Populate Profile Data
+            const merchant = KalpaAuth.getCurrentMerchant ? KalpaAuth.getCurrentMerchant() : null;
+            if (merchant) {
+                document.getElementById('merchant-name').value = merchant.name || '';
+                document.getElementById('merchant-email').value = merchant.email || '';
+                document.getElementById('merchant-phone').value = merchant.phone || '';
+                
+                if (merchant.name) {
+                    document.getElementById('avatar-initial').textContent = merchant.name.charAt(0).toUpperCase();
+                }
+            }
+
+            // Populate Store Data
+            const store = KalpaStore.getStoreProfile ? KalpaStore.getStoreProfile() : {};
+            document.getElementById('store-name').value = store.name || '';
+            document.getElementById('store-desc').value = store.description || '';
+            document.getElementById('store-phone').value = store.phone || '';
+
+            // Handle Profile Save
+            document.getElementById('profile-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('merchant-name').value;
+                const phone = document.getElementById('merchant-phone').value;
+                if (KalpaAuth.updateMerchant) {
+                    KalpaAuth.updateMerchant({ name, phone });
+                }
+                KalpaAnimations.showToast('Profile updated successfully!', 'success');
+                if (name) {
+                    document.getElementById('avatar-initial').textContent = name.charAt(0).toUpperCase();
+                }
+            });
+
+            // Handle Business Save
+            document.getElementById('business-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                KalpaAnimations.showToast('Business details updated successfully!', 'success');
+            });
+
+            // Handle Store Save
+            document.getElementById('store-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                KalpaAnimations.showToast('Store settings updated successfully!', 'success');
+            });
+        });
+    </script>
+</body>
+</html>
