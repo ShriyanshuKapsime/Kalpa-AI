@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalpa AI - Store Setup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50 font-sans min-h-screen">
+
+    <nav class="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-indigo-600 tracking-tight">Kalpa<span class="text-gray-800">AI</span></h1>
+        <span class="text-sm text-gray-500 font-medium px-3 py-1 bg-gray-100 rounded-full">Step 1: Onboarding</span>
+    </nav>
+
+    <main class="max-w-2xl mx-auto mt-12 p-8 bg-white rounded-xl shadow-sm border border-gray-100">
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Digitize Your Physical Store</h2>
+        <p class="text-gray-600 mb-8 text-sm">Upload a photo of your storefront signboard. Our Vision AI will
+            automatically configure your digital catalog.</p>
+        <form id="onboardingForm" class="space-y-6">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">1. Shop Signboard (Required)</label>
+                <input type="file" id="shopfrontImage" accept="image/*" required
+                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border border-gray-200 rounded-md p-1">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">2. Inside Shop (Optional)</label>
+                    <input type="file" id="interiorImage1" accept="image/*"
+                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100 border border-gray-200 rounded-md p-1">
+                </div>
+            </div>
+
+            <button type="submit" id="generateBtn"
+                class="w-full bg-black text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-800 transition shadow-md">
+                Generate Store with AI ✨
+            </button>
+        </form>
+
+        <div id="loadingState" class="hidden mt-6 text-center py-6">
+            <p class="text-indigo-600 font-bold animate-pulse">Kalpa AI is analyzing your physical store...</p>
+        </div>
+
+        <div id="aiResultArea" class="hidden mt-8 p-6 bg-indigo-50 border border-indigo-100 rounded-lg">
+            <h3 class="text-lg font-bold text-gray-800 mb-3">✅ Store Generated!</h3>
+            <p class="text-sm text-gray-700 mb-1"><strong>Name:</strong> <span id="outName"></span></p>
+            <p class="text-sm text-gray-700 mb-1"><strong>Phone:</strong> <span id="outPhone"></span></p>
+            <p class="text-sm text-gray-700 mb-3"><strong>Address:</strong> <span id="outAddress"></span></p>
+            <p class="text-sm text-gray-700 mb-4"><strong>About:</strong> <span id="outDesc"></span></p>
+
+            <div class="mb-4">
+                <p class="text-sm font-bold text-gray-700 mb-2">Detected Categories:</p>
+                <div id="outCategories" class="flex flex-wrap gap-4"></div>
+            </div>
+
+            <button onclick="window.location.href='dashboard.html'"
+                class="mt-4 w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 shadow-md transition">
+                Go to Inventory Dashboard ➔
+            </button>
+        </div>
+    </main>
+
+<script>
+        // Handle Form Submission
+        document.getElementById('onboardingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const shopfront = document.getElementById('shopfrontImage').files[0];
+            const interior = document.getElementById('interiorImage1').files[0];
+
+            document.getElementById('generateBtn').classList.add('hidden');
+            document.getElementById('loadingState').classList.remove('hidden');
+
+            const formData = new FormData();
+            formData.append('images', shopfront);
+            if (interior) formData.append('images', interior);
+
+            try {
+                const response = await fetch('http://localhost:3000/api/setup-store', { method: 'POST', body: formData });
+                const data = await response.json();
+
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('aiResultArea').classList.remove('hidden');
+
+                // Populate UI
+                document.getElementById('outName').innerText = data.shopName;
+                document.getElementById('outDesc').innerText = data.description;
+                document.getElementById('outPhone').innerText = data.contactNumber || "Not found";
+                document.getElementById('outAddress').innerText = data.address || "Not found";
+
+                // Render Taxonomy
+                const catContainer = document.getElementById('outCategories');
+                catContainer.innerHTML = '';
+
+                if (data.taxonomy && data.taxonomy.length > 0) {
+                    data.taxonomy.forEach(tax => {
+                        let subBubbles = tax.subCategories.map(sub =>
+                            `<span class="bg-white border border-indigo-200 text-indigo-700 text-xs px-2 py-1 rounded-md shadow-sm">${sub}</span>`
+                        ).join('');
+
+                        catContainer.innerHTML += `
+                            <div class="w-full bg-white p-3 rounded border border-indigo-100 shadow-sm">
+                                <h4 class="text-sm font-bold text-gray-800 mb-2">${tax.parentCategory}</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    ${subBubbles}
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    catContainer.innerHTML = `<p class="text-sm text-red-500">No categories detected.</p>`;
+                }
+
+                // Save to LocalStorage for Module B
+                localStorage.setItem('kalpa_shopName', data.shopName);
+                localStorage.setItem('kalpa_taxonomy', JSON.stringify(data.taxonomy));
+
+            } catch (error) {
+                alert("AI Processing Failed. Check terminal.");
+                document.getElementById('generateBtn').classList.remove('hidden');
+                document.getElementById('loadingState').classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+
+</html>

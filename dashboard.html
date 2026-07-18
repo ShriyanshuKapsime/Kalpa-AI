@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Shop Manager</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            background: #f4f4f5;
+            padding: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            margin: 0 auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        input,
+        button {
+            width: 100%;
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button {
+            background: #000;
+            color: #fff;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background: #ccc;
+        }
+
+        #result {
+            margin-top: 1.5rem;
+            display: none;
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .price-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .selling-price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #111;
+        }
+
+        .mrp {
+            text-decoration: line-through;
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        .discount {
+            background: #22c55e;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .specs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+
+        .spec-item {
+            background: #f9fafb;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .spec-label {
+            color: #6b7280;
+            display: block;
+            font-size: 0.8rem;
+        }
+
+        .spec-val {
+            font-weight: 500;
+            color: #111;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <h2>Agentic Product Lister</h2>
+
+        <label>Front Image (Required)</label>
+        <input type="file" id="frontInput" accept="image/*">
+
+        <label>Back Image (Optional - For Specs)</label>
+        <input type="file" id="backInput" accept="image/*">
+
+        <label>Your Selling Price (₹)</label>
+        <input type="number" id="priceInput" placeholder="e.g. 250">
+
+        <button id="uploadBtn" onclick="processProduct()">Generate Catalog Listing</button>
+        <div id="loading" style="display:none; text-align:center; color: #2563eb; font-weight: bold;">Agent searching
+            web and analyzing images...</div>
+
+        <div id="result">
+            <h3 id="resName" style="margin-top:0;"></h3>
+            <span style="background: #1e40af; color:#fff; padding: 3px 8px; border-radius: 12px; font-size: 12px;"
+                id="resCategory"></span>
+
+            <div class="price-container">
+                <span class="selling-price" id="resSelling"></span>
+                <span class="mrp" id="resMrp"></span>
+                <span class="discount" id="resDiscount"></span>
+            </div>
+            <div id="resReasoning"
+                style="margin-top: 15px; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px; border-radius: 6px; font-size: 0.85rem; color: #166534; font-family: monospace;">
+                🤖 Agent Log: <span id="reasoningText"></span>
+            </div>
+
+            <p id="resDesc" style="color: #4b5563; font-size: 0.95rem; line-height: 1.5;"></p>
+
+            <h4 style="margin-bottom: 5px;">Specifications</h4>
+            <div class="specs-grid" id="resAttributes"></div>
+        </div>
+    </div>
+
+    <script>
+        async function processProduct() {
+            const frontFile = document.getElementById('frontInput').files[0];
+            const backFile = document.getElementById('backInput').files[0];
+            const price = document.getElementById('priceInput').value;
+
+            if (!frontFile || !price) return alert("Front image and Selling Price are required!");
+
+            document.getElementById('uploadBtn').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('frontImage', frontFile);
+            if (backFile) formData.append('backImage', backFile);
+            formData.append('sellingPrice', price);
+
+            try {
+                const response = await fetch('http://localhost:3000/api/analyze-product', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error("Server failed to process");
+                const data = await response.json();
+
+                // Populate Text
+                document.getElementById('resName').innerText = data.productName;
+                document.getElementById('resCategory').innerText = data.category;
+                document.getElementById('resDesc').innerText = data.description;
+
+                document.getElementById('reasoningText').innerText = data.reasoning_summary;
+
+                // Populate Pricing
+                document.getElementById('resSelling').innerText = `₹${data.pricing.sellingPrice}`;
+                document.getElementById('resMrp').innerText = `MRP ₹${data.pricing.mrp}`;
+
+                const discountElem = document.getElementById('resDiscount');
+                if (data.pricing.discountPercentage > 0) {
+                    discountElem.innerText = `${data.pricing.discountPercentage}% OFF`;
+                    discountElem.style.display = 'inline-block';
+                } else {
+                    discountElem.style.display = 'none';
+                }
+
+                // Populate Specs Grid
+                const attrList = document.getElementById('resAttributes');
+                attrList.innerHTML = '';
+                for (const [key, value] of Object.entries(data.specifications)) {
+                    attrList.innerHTML += `
+                <div class="spec-item">
+                    <span class="spec-label">${key}</span>
+                    <span class="spec-val">${value}</span>
+                </div>`;
+                }
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('uploadBtn').style.display = 'block';
+                document.getElementById('uploadBtn').innerText = 'Upload Another';
+
+            } catch (error) {
+                console.error(error);
+                alert("AI Processing Failed! Check terminal for errors.");
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('uploadBtn').style.display = 'block';
+            }
+        }
+    </script>
+
+</body>
+
+</html>
